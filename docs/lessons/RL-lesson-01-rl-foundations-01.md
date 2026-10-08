@@ -27,7 +27,7 @@ By the end of this lesson, you should be able to:
 
 ## 1. What is reinforcement learning?
 
-Reinforcement learning (RL) is about learning **what to do through experience when choices have consequences over time**. The decision maker, called an **agent**, interacts with its environment and uses the resulting experience to improve how it chooses actions (**NOTE**: here, the environment is mentioned, but no definition is given. Shall we move here the short definition of agent and environemnt give in section 2?).
+Reinforcement learning (RL) is about learning **what to do through experience when choices have consequences over time**. The **agent** is the decision maker: it chooses actions. The **environment** is the system the agent interacts with: it responds to those actions and provides feedback. Through this interaction, the agent gains experience and learns to improve its choices.
 
 **Example**: Think of a robot vacuum. Cleaning earns a benefit, but uses battery. Charging takes time and earns no cleaning benefit immediately. A robot that always cleans whenever it can may run out of power far from its charger. A better strategy sometimes accepts a small cost now to keep working later.
 
@@ -40,8 +40,6 @@ In supervised learning, a training example usually includes a target answer, suc
 An RL agent also affects what it gets to observe, for **example**, visiting the charger teaches it different things from cleaning another room. In the companion hands-on lab, we only simulate this interaction. Learning a policy comes later.
 
 ## 2. The interaction loop: a decision log
-
-To describe this interaction precisely, we distinguish the **agent**, which chooses actions, from the **environment**, which produces the resulting next state and reward.
 
 At each decision step, the agent receives information describing the current **state** and chooses an **action** from the available choices. In response, the environment produces a **next state** and a **reward**.
 
@@ -64,7 +62,7 @@ For **example**, consider one robot decision:
 | Reward | Score $-1$ for time spent charging | $R_{t+1}$ |
 | Next state | At charger, high battery | $S_{t+1}$ |
 
-A **trajectory** is a complete decision log (**NOTE**: there is a definition of trajectory here, and one in the subsequent section. Shall we merge them, and give a unique definition instead?):
+A **trajectory**, written $\tau$, is an ordered record of states, actions, and rewards produced as the agent interacts with the environment. It can describe a finite segment, a complete episode, or an ongoing sequence:
 
 $$
 \tau=(S_0,A_0,R_1,S_1,A_1,R_2,\ldots).
@@ -84,7 +82,7 @@ Read the vertical bar as “given.” The formula says: **the chance of selectin
 
 If $\pi(\text{charge}\mid\text{low})=0.8$ and $\pi(\text{clean}\mid\text{low})=0.2$, the robot charges in about 80 out of 100 such decisions, over many repetitions. Those counts are averages, not a guarantee for a particular group of 100. The available action probabilities must add to one.
 
-The policy is the rule; a trajectory is one sequence produced by using that rule. Even the same rule can produce different trajectories when choices or outcomes are random.
+The policy supplies the action choices along a trajectory. The same policy can produce different trajectories when its choices or the environment’s outcomes are random.
 
 ## 3. Markov Decision Processes: specifying the world
 
