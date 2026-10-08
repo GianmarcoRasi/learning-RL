@@ -72,6 +72,10 @@ $$
 
 For **example**, “low battery, charge, $-1$, high battery, clean, $+3$, low battery” is a two-transition trajectory.
 
+### Episodes and continuing tasks
+
+An **episode** is an interaction sequence with a task-defined end, such as reaching an exit or failing. A **continuing task** has no natural end, such as, for **example**, managing heating indefinitely. In an **episodic task**, entering a **terminal state** ends the episode: no actions or rewards follow. Any success or failure reward belongs to the transition entering that state.
+
 ### A policy is a decision rule
 
 A **policy**, written $\pi$, tells the agent how to choose in each state. For **example**, “Charge whenever battery is low” is a deterministic policy: it specifies one action. A stochastic policy gives probabilities instead:
@@ -86,9 +90,11 @@ For **example**, If $\pi(\text{charge}\mid\text{low})=0.8$ and $\pi(\text{clean}
 
 The policy supplies the action choices along a trajectory. The same policy can produce different trajectories when its choices or the environment’s outcomes are random.
 
+**Example**: Suppose the robot follows the deterministic policy “always clean.” Starting with low battery, one run might produce “low battery, clean, $+3$, low battery,” while another produces “low battery, clean, $-10$, failed.” The policy chooses the same action in both runs, but the environment’s random response produces different trajectories.
+
 ## 3. Markov Decision Processes: specifying the world
 
-A **Markov Decision Process (MDP)** is a mathematical description of a decision problem. It specifies what situations and choices exist, how choices change the world, and how outcomes are scored.
+A **Markov Decision Process (MDP)** is a mathematical model of the agent–environment interaction. It specifies the possible states, the actions available in each state, the probabilities of transitions, and how rewards are generated. Its defining requirement is the **Markov property**: the current state and chosen action contain enough information to determine the probabilities of the next state and reward.
 
 We often list its ingredients as
 
@@ -96,15 +102,17 @@ $$
 (\mathcal S,\mathcal A,P,R,\gamma).
 $$
 
-| Ingredient | Plain meaning | Robot example |
-| --- | --- | --- |
-| $\mathcal S$ | Set of possible states | High battery $H$, low battery $L$, failed $F$ |
-| $\mathcal A$ | Available actions | Clean or charge, where permitted |
-| $P(s'\mid s,a)$ | Chance of next state $s'$ after action $a$ at $s$ | Chance of failure when cleaning at low battery |
-| $R$ | Rule or distribution for rewards | $+3$ for cleaning, $-1$ for charging |
-| $\gamma$ | Weighting of future rewards | $0.9$ discounts rewards further away |
+| Ingredient | Meaning |
+| --- | --- |
+| $\mathcal S$ | Set of possible states |
+| $\mathcal A$ | Set of actions; available actions may depend on the state |
+| $P(s'\mid s,a)$ | Probability of next state $s'$ after action $a$ in state $s$ |
+| $R$ | Rule or distribution that generates rewards |
+| $\gamma$ | Discount factor controlling the weight of future rewards |
 
-A complete tiny model could include these rules:
+### Worked example: specifying the robot vacuum MDP
+
+For the robot vacuum, use three states: high battery ($H$), low battery ($L$), and failed ($F$). The available actions are clean and charge in either battery state; no actions are available after failure. Use $\gamma=0.9$. The following table specifies the transition probabilities and rewards:
 
 | State | Action | Next state | Probability | Reward |
 | --- | --- | --- | ---: | ---: |
@@ -116,7 +124,7 @@ A complete tiny model could include these rules:
 
 For each state-action pair, outcome probabilities sum to one. The two low-battery cleaning rows describe possible outcomes of **one** choice, not two choices. $F$ is terminal: failure ends this task, with no later actions or rewards.
 
-Rewards may depend on the outcome. Later lessons combine next-state and reward probabilities into $p(s',r\mid s,a)$: the chance of getting both next state $s'$ and reward $r$.
+Rewards may depend on the next state as well as the current state and action. In the robot example, cleaning at low battery earns $+3$ if the robot keeps working, but $-10$ if it fails. The two rows specify both the possible next states and their associated rewards.
 
 ### The Markov property: does the state tell enough?
 
@@ -129,15 +137,13 @@ $$
 
 The left side uses both present and history. The right side uses only present state and action. Equality says that a well-chosen state already summarizes the relevant history. In a full MDP, this principle applies to the reward and next-state outcome together.
 
-**Practical example.** Two robots are both in the kitchen. One has a full battery and the other has an almost empty battery. If state means only “kitchen,” the same cleaning action can have very different failure chances depending on earlier battery use. Include battery level in the state so this information is available now. Include other variables too if they affect the model, such as whether the floor is still dirty.
+Markov does **not** mean predictable with certainty. The next outcome can be random; the requirement is that its probabilities depend only on the current state and action, without needing additional history. If the agent cannot observe an important variable, its observation may not provide a full Markov state.
 
-A game enemy attacking every third turn gives another example. Equal HP does not tell us whether the next attack is due. Adding the completed-turn count modulo three distinguishes the three attack phases.
+**Example**: two robots are both in the kitchen. One has a full battery and the other has an almost empty battery. If state means only “kitchen,” the same cleaning action can have very different failure chances depending on earlier battery use. Include battery level in the state so this information is available now. Include other variables too if they affect the model, such as whether the floor is still dirty.
 
-Markov does **not** mean predictable with certainty. A low-battery robot can still fail randomly. The requirement is that the current state gives the correct probabilities without needing forgotten history. If the agent cannot observe an important variable, its observation need not be a full Markov state.
+**Example**: A game enemy attacking every third turn gives another example. Equal HP does not tell us whether the next attack is due. Adding the completed-turn count modulo three distinguishes the three attack phases.
 
-### Episodes and continuing tasks
-
-An **episode** is a run with a task-defined end, such as reaching an exit or failing. A **continuing task** has no natural end, such as managing heating indefinitely. A terminal state has no future reward, so its continuation value is zero. The reward for success or failure belongs to the transition entering it.
+### Task deadlines and simulation cutoffs
 
 Stopping an experiment after 100 steps is **truncation** if the actual task would continue. It stops our record, not the underlying consequences. A genuine task deadline is different: time remaining must be included in the state if it changes the best decision.
 
@@ -154,6 +160,22 @@ $$
 
 The summation symbol $\sum$ means “add the terms.” $k$ starts at zero for the next reward, then increases for each reward further in the future. $\gamma^k$ is its weight. We give the first reward weight one, including when $\gamma=0$.
 
+### What does the discount factor do?
+
+The **discount factor**, $\gamma\in[0,1]$, controls how much weight future rewards receive. When $\gamma=0$, only the next reward counts. For $0<\gamma<1$, rewards further in the future receive progressively less weight. When $\gamma=1$, all rewards receive equal weight. We choose $\gamma$ as part of the objective.
+
+For a continuing task the sum may be infinite:
+
+$$
+G_t=\sum_{k=0}^{\infty}\gamma^kR_{t+k+1}.
+$$
+
+If rewards are bounded and $\gamma<1$, decreasing weights keep this sum finite. Earning $1$ forever with $\gamma=0.9$ gives $1+0.9+0.81+\cdots=1/(1-0.9)=10$. With $\gamma=1$ that same sum grows without bound. Finite episodes can use $\gamma=1$; infinite tasks need more care.
+
+### Expected return
+
+When outcomes are random, compare **expected return**: a probability-weighted average over possible futures. A one-step action paying $10$ with probability $0.8$ and $-10$ with probability $0.2$ has expected return $0.8(10)+0.2(-10)=6$. It does not pay $6$ on any single attempt, and this average alone does not describe its risk.
+
 ### Worked example: cleaning or charging
 
 Suppose the robot starts with low battery. We compare the rewards over the next two transitions, using $\gamma=1$, so both rewards receive equal weight.
@@ -167,7 +189,7 @@ First, consider two possible trajectories:
 
 Charging gives a worse immediate reward, but a higher return than the failed cleaning trajectory. The reward scores one transition; the return combines rewards across the future. These numbers are a designer's scoring rule; they are not automatically the robot's energy measurements.
 
-**This comparison describes two trajectories.** Because cleaning with low battery can fail randomly, deciding which plan is better requires averaging over its possible outcomes. We introduce that comparison below, under “Expected return and reward design.”
+**This comparison describes two trajectories.** Deciding which plan is better requires comparing expected returns across all its possible outcomes, including failure on the first cleaning action.
 
 ### Worked example: delivering a parcel
 
@@ -187,9 +209,7 @@ $$
 
 The ordinary reward sum is $8$, but the discounted return is $6.2$. From the next decision, $G_1=-1+0.9(10)=8$; from the final decision, $G_2=10$. Discount exponents restart relative to the point from which we are evaluating the future.
 
-### What does the discount factor do?
-
-$\gamma$ is a chosen parameter that controls the objective, rather than something learned from the reward sequence.
+Using the same delivery rewards, changing the discount factor changes the return:
 
 | Discount | Delivery return | Interpretation |
 | --- | ---: | --- |
@@ -198,17 +218,7 @@ $\gamma$ is a chosen parameter that controls the objective, rather than somethin
 | $\gamma=0.9$ | $6.2$ | Distant rewards keep more weight |
 | $\gamma=1$ | $8$ | Add all rewards without discounting |
 
-For a continuing task the sum may be infinite:
-
-$$
-G_t=\sum_{k=0}^{\infty}\gamma^kR_{t+k+1}.
-$$
-
-If rewards are bounded and $\gamma<1$, decreasing weights keep this sum finite. Earning $1$ forever with $\gamma=0.9$ gives $1+0.9+0.81+\cdots=1/(1-0.9)=10$. With $\gamma=1$ that same sum grows without bound. Finite episodes can use $\gamma=1$; infinite tasks need more care.
-
-### Expected return and reward design
-
-When outcomes are random, compare **expected return**: a probability-weighted average over possible futures. A one-step action paying $10$ with probability $0.8$ and $-10$ with probability $0.2$ has expected return $0.8(10)+0.2(-10)=6$. It does not pay $6$ on any single attempt, and this average alone does not describe its risk.
+### Reward design
 
 Finally, the agent optimizes the reward rule we supply. Paying a courier $+1$ for every extra move can encourage wandering; charging a movement cost and paying for delivery can favor finishing sooner. Always ask whether a high return actually describes the behavior you want.
 
