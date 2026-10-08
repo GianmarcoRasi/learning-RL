@@ -1,12 +1,12 @@
 # Lesson 1 — Reinforcement Learning Foundations: Agents, Environments, and MDPs — Version 2 — Hands-on (Python)
 
-> **Concepts and theoretical exercises:** [RL-lesson-01-rl-foundations](RL-lesson-01-rl-foundations.md)  
+> **Concepts and theoretical exercises:** [RL-lesson-01-rl-foundations](RL-lesson-01-rl-foundations-01.md)  
 > **Study pace:** Allow 45–75 minutes for the coding lab and practical exercises.  
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 
 These are the original lesson’s command-line labs and practical exercises. The programs use Python 3.10+ and only the standard library. Run commands from the directory containing your saved script; on systems without `python`, use `python3`.
 
-## 6. Practical lab --- Build a tiny environment
+## 1. Practical lab --- Build a tiny environment
 
 Imagine a courier walking along five numbered stops. Position $0$ is the depot, positions $1,2,3$ are intermediate stops, and position $4$ is the destination.
 
@@ -128,7 +128,7 @@ $$
 
 The script reports every episode and a final summary. `--seed` reproduces random runs in the same Python environment. Nothing is learning yet: the policy is specified by the user.
 
-## 7. Practical exercise — Random agent
+## 2. Practical exercise — Random agent
 
 1. Run 100 random episodes, then 1,000. Compare mean return, length and success rate.
 2. Use `--max-steps 2` with the right policy. Why are all episodes truncated?

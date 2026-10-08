@@ -7,7 +7,7 @@
 > **Course:** Reinforcement Learning — Theory + Practice  
 > **Lesson goal:** Learn how an agent can assign long-term value to states and actions.
 
-**Hands-on companion:** [Python labs and practical exercises](RL-lesson-02-value-functions-bellman-hands-on.md)
+**Hands-on companion:** [Python labs and practical exercises](RL-lesson-02-value-functions-bellman-02-hands-on.md)
 
 ### How to study this lesson
 

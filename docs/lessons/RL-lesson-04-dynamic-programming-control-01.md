@@ -8,7 +8,7 @@
 > **Prerequisites:** Bellman expectation equations from Lesson 2 and exploration from Lesson 3.  
 > **Goal:** Turn value estimates into improved policies using a known MDP model.  
 
-**Hands-on companion:** [Python labs and practical exercises](RL-lesson-04-dynamic-programming-control-hands-on.md)
+**Hands-on companion:** [Python labs and practical exercises](RL-lesson-04-dynamic-programming-control-02-hands-on.md)
 
 ### How to study this lesson
 

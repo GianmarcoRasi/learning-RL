@@ -8,7 +8,7 @@
 > **Prerequisites:** Lessons 1–2.  
 > **Goal:** Learn why good decision making requires gathering information as well as using it.  
 
-**Hands-on companion:** [Python labs and practical exercises](RL-lesson-03-bandits-exploration-hands-on.md)
+**Hands-on companion:** [Python labs and practical exercises](RL-lesson-03-bandits-exploration-02-hands-on.md)
 
 ### How to study this lesson
 

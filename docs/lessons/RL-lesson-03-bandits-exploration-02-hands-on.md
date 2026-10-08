@@ -1,6 +1,6 @@
 # Lesson 3 — Multi-Armed Bandits: Exploration and Exploitation — Version 2 — Hands-on (Python)
 
-> **Concepts and theoretical exercises:** [RL-lesson-03-bandits-exploration](RL-lesson-03-bandits-exploration.md)  
+> **Concepts and theoretical exercises:** [RL-lesson-03-bandits-exploration](RL-lesson-03-bandits-exploration-01.md)  
 > **Study pace:** Allow 45–75 minutes for the coding lab and practical exercises.  
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 

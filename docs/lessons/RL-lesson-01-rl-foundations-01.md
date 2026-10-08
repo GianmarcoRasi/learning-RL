@@ -7,7 +7,7 @@
 > **Course:** Reinforcement Learning — Theory + Practice  
 > **Lesson goal:** Build the mental model that everything else in RL will use.
 
-**Hands-on companion:** [Python labs and practical exercises](RL-lesson-01-rl-foundations-hands-on.md)
+**Hands-on companion:** [Python labs and practical exercises](RL-lesson-01-rl-foundations-02-hands-on.md)
 
 ### How to study this lesson
 
@@ -29,13 +29,13 @@ By the end of this lesson, you should be able to:
 
 Reinforcement learning (RL) is about learning **what to do through experience when choices have consequences over time**. An agent tries actions, receives feedback, and can use that experience to improve its behavior.
 
-Think of a robot vacuum. Cleaning earns a benefit, but uses battery. Charging takes time and earns no cleaning benefit immediately. A robot that always cleans whenever it can may run out of power far from its charger. A better strategy sometimes accepts a small cost now to keep working later.
+**Example**: Think of a robot vacuum. Cleaning earns a benefit, but uses battery. Charging takes time and earns no cleaning benefit immediately. A robot that always cleans whenever it can may run out of power far from its charger. A better strategy sometimes accepts a small cost now to keep working later.
 
 This is **sequential decision making**: one decision changes the situation in which the next decision happens. RL often involves rewards that arrive only after several actions, so the learner must work out which earlier decisions helped.
 
 ### A worked example: cleaning or charging
 
-Suppose the robot has low battery. Compare two plans over the next two actions, using no discounting for now:
+Suppose the robot has low battery. Compare two plans over the next two actions, using no discounting for now (**NOTE**: reward and discount have not been introduced yet. Shall this example be reworked and proposed later in the lesson?):
 
 | Plan | First reward | Second reward | Total |
 | --- | ---: | ---: | ---: |
@@ -46,15 +46,15 @@ The first action of the better plan has the worse immediate reward. This illustr
 
 ### How is this different from supervised learning?
 
-In supervised learning, a training example usually includes a target answer, such as “this picture shows a cat.” In RL, feedback usually says how an outcome scored, without giving the best action as a label. A failed cleaning run does not directly tell the robot when it should have charged.
+In supervised learning, a training example usually includes a target answer, such as “this picture shows a cat.” In RL, feedback usually says how an outcome scored, without giving the best action as a label. For **example**, A failed cleaning run does not directly tell the robot when it should have charged.
 
-An RL agent also affects what it gets to observe: visiting the charger teaches it different things from cleaning another room. In the companion hands-on lab, we only simulate this interaction. Learning a policy comes later.
+An RL agent also affects what it gets to observe, for **example**, visiting the charger teaches it different things from cleaning another room. In the companion hands-on lab, we only simulate this interaction. Learning a policy comes later.
 
 ## 2. The interaction loop: a decision log
 
-An **agent** makes decisions. The **environment** is everything responding to those decisions. A **state** describes the situation, an **action** is a choice, and a **reward** is a numerical score received after that choice.
+(**NOTE**: can this be reformulated more clearly? Please be consistent with the definitions) An **agent** makes decisions. The **environment** is everything responding to those decisions. A **state** describes the situation, an **action** is a choice, and a **reward** is a numerical score received after that choice.
 
-Here is one robot decision:
+**Example**: Here is one robot decision (NOTE: I would introduce the example here, but only after the notation for state, action, and reward are given.):
 
 | Part | Concrete meaning | Symbol |
 | --- | --- | --- |
@@ -77,7 +77,7 @@ $$
 \tau=(S_0,A_0,R_1,S_1,A_1,R_2,\ldots).
 $$
 
-For example, “low battery, charge, $-1$, high battery, clean, $+3$, low battery” is a two-transition trajectory. A transition is one move from a state to its next state, together with its reward.
+For **example**, “low battery, charge, $-1$, high battery, clean, $+3$, low battery” is a two-transition trajectory. A transition is one move from a state to its next state, together with its reward.
 
 ### A policy is a decision rule
 
@@ -204,7 +204,48 @@ When outcomes are random, compare **expected return**: a probability-weighted av
 
 Finally, the agent optimizes the reward rule we supply. Paying a courier $+1$ for every extra move can encourage wandering; charging a movement cost and paying for delivery can favor finishing sooner. Always ask whether a high return actually describes the behavior you want.
 
-## 5. Theory exercise --- Compute returns
+## 5. Worked example: LineWorld — an MDP from start to finish
+
+LineWorld connects the state, action, transition, policy, and return concepts in one small example. Imagine a courier walking along five numbered stops: position $0$ is the depot, positions $1,2,3$ are intermediate stops, and position $4$ is the destination.
+
+### Specify the MDP
+
+| Ingredient | LineWorld definition |
+| --- | --- |
+| States | Positions $\mathcal S=\{0,1,2,3,4\}$; start at $0$ |
+| Actions | Left or right at each nonterminal position |
+| Left transition | From position $s<4$, move to $\max(0,s-1)$ |
+| Right transition | From position $s<4$, move to $s+1$ |
+| Reward | $-1$ unless the move enters $4$, in which case $+10$ |
+| Terminal condition | Entry to position $4$ ends the episode; no actions or rewards follow |
+| Discount | Use $\gamma=0.9$ for this example |
+
+Every transition is deterministic: the specified next position has probability one. Moving left at $0$ keeps the courier at $0$, but still counts as a transition and earns $-1$. The goal-entry reward is $10$ total, rather than $10-1$.
+
+**Why is position a Markov state?** Given the current position and action, these rules determine both the next position and reward. The route taken to reach the current position changes neither outcome. Position is sufficient under this model because there is no battery, attack clock, or task deadline affecting the rules.
+
+### Follow a policy and compute its return
+
+Choose the deterministic policy “always move right.” Its trajectory is
+
+$$
+\tau=(0,\text{right},-1,1,\text{right},-1,2,\text{right},-1,3,\text{right},10,4).
+$$
+
+There are four transitions. The final state is terminal, and the four rewards are $-1,-1,-1,10$. Their ordinary sum is $7$, while their discounted return is
+
+$$
+G_0=-1+0.9(-1)+0.9^2(-1)+0.9^3(10)
+=-1-0.9-0.81+7.29=4.58.
+$$
+
+The policy supplies the choices; the MDP supplies their consequences; the return scores the resulting future. This policy is specified in advance—nothing is learning yet.
+
+Implement this environment and compare fixed and random policies in the [hands-on companion](RL-lesson-01-rl-foundations-02-hands-on.md). That lab also explores simulation cutoffs and alternative reward rules.
+
+------------------------------------------------------------------------
+
+## 6. Theory exercise --- Compute returns
 
 Suppose the future rewards are
 
@@ -292,32 +333,7 @@ At $\gamma=0.4$, the two actions have equal return.
 
 ------------------------------------------------------------------------
 
-## 6. A tiny environment: LineWorld
-
-Imagine a courier walking along five numbered stops. Position $0$ is the depot, positions $1,2,3$ are intermediate stops, and position $4$ is the destination.
-
-| Rule | Meaning |
-| --- | --- |
-| Start | Position $0$ |
-| Actions | Left (coded as $0$) or right (coded as $1$) |
-| Left at position $0$ | Remain at $0$; it still counts as a transition |
-| Transition not reaching $4$ | Reward $-1$ |
-| Transition entering $4$ | Reward $+10$, then terminate |
-
-Going straight right gives rewards $-1,-1,-1,10$. The final move gives $10$ total, rather than $10-1$. This small world lets us inspect every decision without the extra details of a real delivery problem.
-
-### Random policies and reward design
-
-A uniform random walk on this finite line reaches the goal with probability one if allowed to run indefinitely, but it has no fixed upper bound on episode length. A finite safety limit can therefore truncate episodes. A policy that always moves left never reaches the goal.
-
-Compare the original movement-cost rewards with sparse rewards: $0$ for an ordinary move and $1$ on reaching the goal.
-
-With sparse rewards and $\gamma=1$, all successful trajectories earn the same return regardless of length. With $\gamma<1$, earlier goal rewards are worth more. Reward design changes the objective as well as the feedback available to learning algorithms.
-
-
-------------------------------------------------------------------------
-
-## 8. Theory exercise --- Model an RL problem
+## 7. Theory exercise --- Model an RL problem
 
 Choose one problem:
 
@@ -345,7 +361,7 @@ Then answer:
 
 ------------------------------------------------------------------------
 
-## Progressive theoretical exercises — Foundations
+## 8. Progressive theoretical exercises — Foundations
 
 Work through these exercises **in order**, after reading the lesson. The earlier in-text exercises are warm-ups; this sequence gradually removes the scaffolding. No programming is needed. Write your reasoning as well as your final answer. Allow an additional 60–90 minutes, or split the sequence across study sessions. The final two exercises are stretch challenges: use their hints when needed. Try each question before reading its solution.
 
@@ -401,21 +417,36 @@ $\mathbb{E}[G_0]=6p-2(1-p)=8p-2$. The two expectations are $0$ and $4$. Discount
 
 ### 1T3 — Repair a non-Markov state
 
-An enemy deals damage $5$ every third action taken by the player and damage $0$ otherwise. Its clock advances after every player action. The proposed state is $(\text{player HP},\text{enemy HP})$.
+Both characters start with $20$ HP, and the number of completed player actions starts at zero. The player can `wait`, which changes neither character's HP directly. After each player action, the completed-action count increases by one; the enemy then deals $5$ damage to the player if the new count is divisible by three, and $0$ otherwise. The enemy's HP stays unchanged. Assume there are no other variables affecting the dynamics.
 
-1. Describe two histories with identical proposed states but different next damage.
-2. Add the smallest clock variable needed to distinguish the phases.
-3. If damage is instead a random independent draw each turn, does randomness alone make the state non-Markov?
+The proposed state is $(\text{player HP},\text{enemy HP})$. Compare two histories: before any player actions, and after two consecutive waits. In both cases, the proposed state is $(20,20)$.
+
+1. If the next action is `wait` in both situations, what damage follows in each? Why does this show that the proposed state is not Markov?
+2. Add a clock variable with three possible values that distinguishes the phases. Define its meaning and update rule, and explain why all three phases matter.
+3. Suppose instead that damage is drawn independently each turn from the same fixed distribution, with no attack clock. Does randomness alone make the HP state non-Markov?
 
 **Hint**
 
-Consider completed-action counts zero and two, with equal HP maintained by prior healing.
+Write the new completed-action count after the next wait in each history. For the clock variable, remember only the remainder after dividing the current completed-action count by three.
 
 
 
 **Solution**
 
-Two histories can have the same HP values but clock counts congruent to $0$ and $2$ modulo $3$. The next action causes damage $0$ in the first case and $5$ in the second. Include $c\in\{0,1,2\}$, the completed-action count modulo $3$. Damage is $5$ when $c=2$, and the next phase is $(c+1)\bmod3$. Assuming these HP values and the phase capture all other relevant dynamics, the augmented state is Markov. Independent random damage is compatible with Markov dynamics: dependence on hidden history, rather than randomness itself, is the problem.
+The histories give different outcomes for the **same current HP state and the same next action**:
+
+| History | Current completed-action count | Count after the next wait | Enemy damage | Next HP state |
+| --- | ---: | ---: | ---: | --- |
+| No actions yet | $0$ | $1$ | $0$ | $(20,20)$ |
+| Two waits completed | $2$ | $3$ | $5$ | $(15,20)$ |
+
+Knowing only $(20,20)$ and `wait` does not determine the next outcome; knowing the history changes the prediction. The proposed state therefore omits relevant information.
+
+Let $c=n\bmod3$, where $n$ is the number of player actions already completed. The augmented state is $(\text{player HP},\text{enemy HP},c)$, with $c\in\{0,1,2\}$. On the next action, damage is $5$ if the **current** phase is $c=2$ and $0$ otherwise; update the phase to $c'=(c+1)\bmod3$.
+
+Phases $0$ and $1$ both give zero damage on the next wait, but they are not interchangeable: from phase $0$ the next attack is three actions away, while from phase $1$ it is two actions away. A three-value phase records the cycle without retaining the full count. Under the stated assumptions, HP and this phase determine the next-outcome distribution, so the augmented state is Markov.
+
+Independent random damage from a fixed distribution is compatible with a Markov HP state under the same assumptions. The next outcome can be uncertain while its probabilities depend only on the current state and action. Dependence on forgotten history, rather than randomness itself, is the problem.
 
 
 

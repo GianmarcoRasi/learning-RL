@@ -1,6 +1,6 @@
 # Lesson 4 — Improving Policies with Dynamic Programming — Version 2 — Hands-on (Python)
 
-> **Concepts and theoretical exercises:** [RL-lesson-04-dynamic-programming-control](RL-lesson-04-dynamic-programming-control.md)  
+> **Concepts and theoretical exercises:** [RL-lesson-04-dynamic-programming-control](RL-lesson-04-dynamic-programming-control-01.md)  
 > **Study pace:** Allow 45–75 minutes for the coding lab and practical exercises.  
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 
