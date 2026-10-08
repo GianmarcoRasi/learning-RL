@@ -27,22 +27,11 @@ By the end of this lesson, you should be able to:
 
 ## 1. What is reinforcement learning?
 
-Reinforcement learning (RL) is about learning **what to do through experience when choices have consequences over time**. An agent tries actions, receives feedback, and can use that experience to improve its behavior.
+Reinforcement learning (RL) is about learning **what to do through experience when choices have consequences over time**. The decision maker, called an **agent**, interacts with its environment and uses the resulting experience to improve how it chooses actions.
 
 **Example**: Think of a robot vacuum. Cleaning earns a benefit, but uses battery. Charging takes time and earns no cleaning benefit immediately. A robot that always cleans whenever it can may run out of power far from its charger. A better strategy sometimes accepts a small cost now to keep working later.
 
 This is **sequential decision making**: one decision changes the situation in which the next decision happens. RL often involves rewards that arrive only after several actions, so the learner must work out which earlier decisions helped.
-
-### A worked example: cleaning or charging
-
-Suppose the robot has low battery. Compare two plans over the next two actions, using no discounting for now (**NOTE**: reward and discount have not been introduced yet. Shall this example be reworked and proposed later in the lesson?):
-
-| Plan | First reward | Second reward | Total |
-| --- | ---: | ---: | ---: |
-| Clean, then fail | $+3$ | $-10$ | $-7$ |
-| Charge, then clean | $-1$ | $+3$ | $+2$ |
-
-The first action of the better plan has the worse immediate reward. This illustrates the central question: **which behavior earns the most over time?** These numbers are a designer's scoring rule; they are not automatically the robot's energy measurements.
 
 ### How is this different from supervised learning?
 
@@ -52,9 +41,21 @@ An RL agent also affects what it gets to observe, for **example**, visiting the 
 
 ## 2. The interaction loop: a decision log
 
-(**NOTE**: can this be reformulated more clearly? Please be consistent with the definitions) An **agent** makes decisions. The **environment** is everything responding to those decisions. A **state** describes the situation, an **action** is a choice, and a **reward** is a numerical score received after that choice.
+To describe this interaction precisely, we distinguish the **agent**, which chooses actions, from the **environment**, which produces the resulting next state and reward.
 
-**Example**: Here is one robot decision (NOTE: I would introduce the example here, but only after the notation for state, action, and reward are given.):
+At each decision step, the agent receives information describing the current **state** and chooses an **action** from the available choices. In response, the environment produces a **next state** and a **reward**.
+
+A state describes the current situation using the variables included in our model. An action is a choice the agent can make. A reward is a numerical signal that scores the resulting transition; it does not directly tell the agent which action was best.
+
+The index $t$ counts decision steps. We write the current state as $S_t$ and the chosen action as $A_t$. After that action, the environment produces reward $R_{t+1}$ and next state $S_{t+1}$:
+
+$$
+S_t\rightarrow A_t\rightarrow (R_{t+1},S_{t+1}).
+$$
+
+The reward is numbered $t+1$ because it results from action $A_t$. At decision zero, the agent observes $S_0$, chooses $A_0$, and then receives $R_1$ and $S_1$.
+
+For example, consider one robot decision:
 
 | Part | Concrete meaning | Symbol |
 | --- | --- | --- |
@@ -62,14 +63,6 @@ An RL agent also affects what it gets to observe, for **example**, visiting the 
 | Action | Return to charger | $A_t$ |
 | Reward | Score $-1$ for time spent charging | $R_{t+1}$ |
 | Next state | At charger, high battery | $S_{t+1}$ |
-
-We write this as
-
-$$
-S_t\rightarrow A_t\rightarrow (R_{t+1},S_{t+1}).
-$$
-
-The index $t$ counts decisions. The reward is numbered $t+1$ because it arrives **after** action $A_t$. At decision zero, we observe $S_0$, choose $A_0$, and then receive $R_1$ and $S_1$.
 
 A **trajectory** is a complete decision log:
 
@@ -160,6 +153,21 @@ G_t=\sum_{k=0}^{T-t-1}\gamma^kR_{t+k+1}
 $$
 
 The summation symbol $\sum$ means “add the terms.” $k$ starts at zero for the next reward, then increases for each reward further in the future. $\gamma^k$ is its weight. We give the first reward weight one, including when $\gamma=0$.
+
+### Worked example: cleaning or charging
+
+Suppose the robot starts with low battery. We compare the rewards over the next two transitions, using $\gamma=1$, so both rewards receive equal weight.
+
+First, consider two possible trajectories:
+
+| Actions and outcomes | First reward | Second reward | Return $G_0$ |
+| --- | ---: | ---: | ---: |
+| Clean successfully, then clean and fail | $+3$ | $-10$ | $-7$ |
+| Charge, then clean successfully | $-1$ | $+3$ | $+2$ |
+
+Charging gives a worse immediate reward, but a higher return than the failed cleaning trajectory. The reward scores one transition; the return combines rewards across the future. These numbers are a designer's scoring rule; they are not automatically the robot's energy measurements.
+
+**This comparison describes two trajectories.** Because cleaning with low battery can fail randomly, deciding which plan is better requires averaging over its possible outcomes. We introduce that comparison below, under “Expected return and reward design.”
 
 ### Worked example: delivering a parcel
 
