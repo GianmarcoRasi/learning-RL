@@ -62,17 +62,19 @@ For **example**, consider one robot decision:
 | Reward | Score $-1$ for time spent charging | $R_{t+1}$ |
 | Next state | At charger, high battery | $S_{t+1}$ |
 
-A **trajectory**, written $\tau$, is an ordered record of states, actions, and rewards produced as the agent interacts with the environment. It can describe a finite segment, a complete episode, or an ongoing sequence:
+A **transition** is one interaction step: the agent chooses an action in the current state, and the environment produces a reward and the next state. We record it as $(S_t,A_t,R_{t+1},S_{t+1})$.
+
+A **trajectory**, written $\tau$, is a sequence of connected transitions: each transition’s next state becomes the following transition’s current state. It can describe a finite segment, a complete episode, or an ongoing sequence:
 
 $$
 \tau=(S_0,A_0,R_1,S_1,A_1,R_2,\ldots).
 $$
 
-For **example**, “low battery, charge, $-1$, high battery, clean, $+3$, low battery” is a two-transition trajectory. A transition is one move from a state to its next state, together with its reward.
+For **example**, “low battery, charge, $-1$, high battery, clean, $+3$, low battery” is a two-transition trajectory.
 
 ### A policy is a decision rule
 
-A **policy**, written $\pi$, tells the agent how to choose in each state. “Charge whenever battery is low” is a deterministic policy: it specifies one action. A stochastic policy gives probabilities instead:
+A **policy**, written $\pi$, tells the agent how to choose in each state. For **example**, “Charge whenever battery is low” is a deterministic policy: it specifies one action. A stochastic policy gives probabilities instead:
 
 $$
 \pi(a\mid s)=P(A_t=a\mid S_t=s).
@@ -80,7 +82,7 @@ $$
 
 Read the vertical bar as “given.” The formula says: **the chance of selecting action $a$, given state $s$**.
 
-If $\pi(\text{charge}\mid\text{low})=0.8$ and $\pi(\text{clean}\mid\text{low})=0.2$, the robot charges in about 80 out of 100 such decisions, over many repetitions. Those counts are averages, not a guarantee for a particular group of 100. The available action probabilities must add to one.
+For **example**, If $\pi(\text{charge}\mid\text{low})=0.8$ and $\pi(\text{clean}\mid\text{low})=0.2$, the robot charges in about 80 out of 100 such decisions, over many repetitions. Those counts are averages, not a guarantee for a particular group of 100. The available action probabilities must add to one.
 
 The policy supplies the action choices along a trajectory. The same policy can produce different trajectories when its choices or the environment’s outcomes are random.
 
