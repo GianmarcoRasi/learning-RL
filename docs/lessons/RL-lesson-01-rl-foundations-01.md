@@ -27,7 +27,7 @@ By the end of this lesson, you should be able to:
 
 ## 1. What is reinforcement learning?
 
-Reinforcement learning (RL) is about learning **what to do through experience when choices have consequences over time**. The decision maker, called an **agent**, interacts with its environment and uses the resulting experience to improve how it chooses actions.
+Reinforcement learning (RL) is about learning **what to do through experience when choices have consequences over time**. The decision maker, called an **agent**, interacts with its environment and uses the resulting experience to improve how it chooses actions (**NOTE**: here, the environment is mentioned, but no definition is given. Shall we move here the short definition of agent and environemnt give in section 2?).
 
 **Example**: Think of a robot vacuum. Cleaning earns a benefit, but uses battery. Charging takes time and earns no cleaning benefit immediately. A robot that always cleans whenever it can may run out of power far from its charger. A better strategy sometimes accepts a small cost now to keep working later.
 
@@ -55,7 +55,7 @@ $$
 
 The reward is numbered $t+1$ because it results from action $A_t$. At decision zero, the agent observes $S_0$, chooses $A_0$, and then receives $R_1$ and $S_1$.
 
-For example, consider one robot decision:
+For **example**, consider one robot decision:
 
 | Part | Concrete meaning | Symbol |
 | --- | --- | --- |
@@ -64,7 +64,7 @@ For example, consider one robot decision:
 | Reward | Score $-1$ for time spent charging | $R_{t+1}$ |
 | Next state | At charger, high battery | $S_{t+1}$ |
 
-A **trajectory** is a complete decision log:
+A **trajectory** is a complete decision log (**NOTE**: there is a definition of trajectory here, and one in the subsequent section. Shall we merge them, and give a unique definition instead?):
 
 $$
 \tau=(S_0,A_0,R_1,S_1,A_1,R_2,\ldots).
