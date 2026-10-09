@@ -4,6 +4,7 @@ import contextlib
 import importlib
 import importlib.util
 import io
+import os
 import random
 import sys
 import tempfile
@@ -13,6 +14,17 @@ from unittest.mock import patch
 
 from learning_rl.environments.lineworld import LineWorld, transition
 from learning_rl.lessons import lesson01, lesson02, lesson03, lesson04
+
+
+@contextlib.contextmanager
+def temporary_working_directory():
+    previous = Path.cwd()
+    with tempfile.TemporaryDirectory() as directory:
+        try:
+            os.chdir(directory)
+            yield
+        finally:
+            os.chdir(previous)
 
 
 class LessonChecks(unittest.TestCase):
@@ -94,6 +106,35 @@ class LessonChecks(unittest.TestCase):
                      contextlib.redirect_stdout(output):
                     module.main()
                 self.assertIn(expected, output.getvalue())
+
+    def test_cli_logs_are_saved_by_lesson_and_run(self):
+        examples = [(lesson01, ["--quiet"]),
+                    (lesson02, ["--method", "dp"]),
+                    (lesson03, ["--runs", "1", "--steps", "10"]),
+                    (lesson04, [])]
+        with temporary_working_directory():
+            for module, arguments in examples:
+                with self.subTest(module=module.__name__):
+                    root = Path("output") / module.__name__.rsplit(".", 1)[-1]
+                    with patch.object(sys, "argv", [module.__name__, "--help"]), \
+                         contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit):
+                        module.main()
+                    self.assertFalse(root.exists())
+                    for _ in range(2):
+                        output = io.StringIO()
+                        with patch.object(sys, "argv", [module.__name__] + arguments), \
+                             contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                            module.main()
+                        self.assertTrue(any(log.read_text(encoding="utf-8") == output.getvalue()
+                                            for log in root.glob("*/run.log")))
+                    self.assertEqual(len(list(root.glob("*/run.log"))), 2)
+                    output = io.StringIO()
+                    with patch.object(sys, "argv", [module.__name__] + arguments +
+                                      ["--output-dir", str(root / "custom")]), \
+                         contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                        module.main()
+                    self.assertEqual((root / "custom/run.log").read_text(encoding="utf-8"),
+                                     output.getvalue())
 
 
 @unittest.skipUnless(importlib.util.find_spec("matplotlib"), "Optional Matplotlib not installed")

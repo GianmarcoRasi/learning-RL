@@ -6,34 +6,15 @@
 
 ## Setup and commands
 
-Use Python 3.10+ and run every command in this tutorial from the **repository root**. Follow the [environment setup in the README](../../README.md), then install the course in editable mode:
-
-```bash
-python -m pip install -e .
-```
-
-For Lesson 1 plots, use `python -m pip install -e ".[plots]"`. Text runs require no runtime dependencies beyond the standard library. Editable installation lets commands use your source changes without reinstalling; no copying baseline programs out of Markdown is needed.
+Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../../README.md#create-a-local-virtual-environment) and [package installation instructions](../../README.md#install-packages) in the README before starting. The README also covers optional plotting dependencies for Lesson 1.
 
 The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
 
-### Save this lesson's results
+### Lesson output
 
-Group experiments under `output/lesson01/RUN_NAME/`. Create a run directory
-before redirecting output. For example, in PowerShell:
-
-```powershell
-New-Item -ItemType Directory -Force -Path output/lesson01/comparison | Out-Null
-```
-
-On macOS/Linux, use `mkdir -p output/lesson01/comparison`. Save a comparison log:
-
-```bash
-python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet > output/lesson01/comparison/run.log
-```
-
-Redirection saves printed output; it does not display it. Use a new run name when
-changing settings to preserve the previous result. See [output conventions](../../output/README.md)
-for displaying and saving simultaneously. Add `--plots output/lesson01/comparison/plots` before the redirection to save the figures beside the log.
+Lesson commands automatically save printed results to `output/lesson01/TIMESTAMP/run.log`
+and display them in the terminal. Each run gets a new directory. Use `--output-dir`
+to choose a directory; reusing it overwrites its log. See [output conventions](../../output/README.md).
 
 ## 1. Guided tutorial — Explore LineWorld
 
@@ -83,10 +64,9 @@ Every command ends with a summary table. `reward_sum`, `return`, and `steps` are
 
 ### Optional plotting
 
-Install Matplotlib in the Python environment you use for this lab:
+Follow the [optional plotting installation instructions in the README](../../README.md#install-packages), then run:
 
 ```bash
-python -m pip install -e ".[plots]"
 python -m learning_rl.lessons.lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/comparison/plots
 ```
 
@@ -136,7 +116,7 @@ For exercises 1–4, use the supplied program. Plots are optional: the summary t
 
 ### Solutions — Exercises 1–5
 
-Try each exercise before reading its solution. To use plots, install Matplotlib and append the indicated `--plots` option; omit it for text-only runs.
+Try each exercise before reading its solution. To use plots, follow the [optional plotting installation instructions in the README](../../README.md#install-packages) and append the indicated `--plots` option; omit it for text-only runs.
 
 #### 1. Compare policies and estimate stability
 

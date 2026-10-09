@@ -1,5 +1,7 @@
 import argparse
 
+from learning_rl.lessons.output import add_output_argument, lesson_output
+
 from learning_rl.environments.lineworld import transition
 
 
@@ -63,23 +65,25 @@ def main():
     parser.add_argument("--gamma", type=float, default=0.9)
     parser.add_argument("--theta", type=float, default=1e-10)
     parser.add_argument("--max-iterations", type=int, default=100000)
+    add_output_argument(parser)
     args = parser.parse_args()
     if args.size < 2 or args.max_iterations < 1:
         parser.error("size >= 2 and max-iterations >= 1 required")
     if not 0 <= args.gamma < 1 or not args.theta > 0:
         parser.error("gamma in [0, 1) and theta > 0 required")
-    for name, algorithm in [("policy", policy_iteration), ("value", value_iteration)]:
-        if args.algorithm not in (name, "both"):
-            continue
-        values, policy, rounds, sweeps = algorithm(args.size, args.gamma, args.theta,
-                                                  args.max_iterations)
-        residual = max(abs(values[s] - max(action_value(s, a, values, args.size,
-                                                        args.gamma) for a in (0, 1)))
-                       for s in range(args.size - 1))
-        print(f"algorithm={name} rounds={rounds} sweeps={sweeps} residual={residual:.3g}")
-        for state, value in enumerate(values):
-            action = "terminal" if state == args.size - 1 else ("right" if policy[state] else "left")
-            print(f"state={state} value={value:.6f} action={action}")
+    with lesson_output("lesson04", args.output_dir):
+        for name, algorithm in [("policy", policy_iteration), ("value", value_iteration)]:
+            if args.algorithm not in (name, "both"):
+                continue
+            values, policy, rounds, sweeps = algorithm(args.size, args.gamma, args.theta,
+                                                      args.max_iterations)
+            residual = max(abs(values[s] - max(action_value(s, a, values, args.size,
+                                                            args.gamma) for a in (0, 1)))
+                           for s in range(args.size - 1))
+            print(f"algorithm={name} rounds={rounds} sweeps={sweeps} residual={residual:.3g}")
+            for state, value in enumerate(values):
+                action = "terminal" if state == args.size - 1 else ("right" if policy[state] else "left")
+                print(f"state={state} value={value:.6f} action={action}")
 
 
 if __name__ == "__main__":

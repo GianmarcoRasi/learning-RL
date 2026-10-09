@@ -2,6 +2,8 @@ import argparse
 import random
 import statistics
 
+from learning_rl.lessons.output import add_output_argument, lesson_output
+
 
 def experiment(means, steps, epsilon, initial, seed, run):
     # Separate streams: reward noise is independent of action-selection draws.
@@ -36,6 +38,7 @@ def main():
     parser.add_argument("--runs", type=int, default=200)
     parser.add_argument("--initial", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=7)
+    add_output_argument(parser)
     args = parser.parse_args()
     import math
     if args.steps < 1 or args.runs < 1:
@@ -44,18 +47,19 @@ def main():
         parser.error("means and initial must be finite")
     if not all(0 <= e <= 1 for e in args.epsilons):
         parser.error("epsilons must be in [0, 1]")
-    for epsilon in args.epsilons:
-        results = [experiment(args.means, args.steps, epsilon, args.initial, args.seed, run)
-                   for run in range(args.runs)]
-        rewards = [r[0] for r in results]
-        se = statistics.stdev(rewards) / args.runs ** 0.5 if args.runs > 1 else 0.0
-        print(f"epsilon={epsilon:g} mean_reward={statistics.mean(rewards):.4f} "
-              f"reward_SE={se:.4f} "
-              f"mean_pseudo_regret={statistics.mean(r[1] for r in results):.2f} "
-              f"optimal_fraction={statistics.mean(r[2] for r in results):.3f}")
-        if args.runs == 1:
-            print("estimates=", [round(q, 4) for q in results[0][3]])
-            print("counts=", results[0][4])
+    with lesson_output("lesson03", args.output_dir):
+        for epsilon in args.epsilons:
+            results = [experiment(args.means, args.steps, epsilon, args.initial, args.seed, run)
+                       for run in range(args.runs)]
+            rewards = [r[0] for r in results]
+            se = statistics.stdev(rewards) / args.runs ** 0.5 if args.runs > 1 else 0.0
+            print(f"epsilon={epsilon:g} mean_reward={statistics.mean(rewards):.4f} "
+                  f"reward_SE={se:.4f} "
+                  f"mean_pseudo_regret={statistics.mean(r[1] for r in results):.2f} "
+                  f"optimal_fraction={statistics.mean(r[2] for r in results):.3f}")
+            if args.runs == 1:
+                print("estimates=", [round(q, 4) for q in results[0][3]])
+                print("counts=", results[0][4])
 
 
 if __name__ == "__main__":

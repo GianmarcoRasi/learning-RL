@@ -6,34 +6,15 @@
 
 ## Setup and commands
 
-Use Python 3.10+ and run every command in this tutorial from the **repository root**. Follow the [environment setup in the README](../../README.md), then install the course in editable mode:
-
-```bash
-python -m pip install -e .
-```
-
-For Lesson 1 plots, use `python -m pip install -e ".[plots]"`. Text runs require no runtime dependencies beyond the standard library. Editable installation lets commands use your source changes without reinstalling; no copying baseline programs out of Markdown is needed.
+Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../../README.md#create-a-local-virtual-environment) and [package installation instructions](../../README.md#install-packages) in the README before starting. The README also covers optional plotting dependencies for Lesson 1.
 
 The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
 
-### Save this lesson's results
+### Lesson output
 
-Group experiments under `output/lesson03/RUN_NAME/`. Create a run directory
-before redirecting output. For example, in PowerShell:
-
-```powershell
-New-Item -ItemType Directory -Force -Path output/lesson03/comparison | Out-Null
-```
-
-On macOS/Linux, use `mkdir -p output/lesson03/comparison`. Save a comparison log:
-
-```bash
-python -m learning_rl.lessons.lesson03 --epsilons 0 0.1 1 --steps 2000 --runs 200 --seed 7 > output/lesson03/comparison/run.log
-```
-
-Redirection saves printed output; it does not display it. Use a new run name when
-changing settings to preserve the previous result. See [output conventions](../../output/README.md)
-for displaying and saving simultaneously.
+Lesson commands automatically save printed results to `output/lesson03/TIMESTAMP/run.log`
+and display them in the terminal. Each run gets a new directory. Use `--output-dir`
+to choose a directory; reusing it overwrites its log. See [output conventions](../../output/README.md).
 
 ## 1. Guided tutorial — Run the lab
 
