@@ -25,15 +25,15 @@ class _Tee:
         self.log.flush()
 
 
-def add_output_argument(parser):
+def add_output_argument(parser, *, help_text=None):
     parser.add_argument(
         "--verbose", action="store_true",
         help="Also show saved output and summary tables in the terminal.",
     )
     parser.add_argument(
         "--output-dir", type=Path,
-        help="Save summary.csv and run.log here (default: output/lessonNN/TIMESTAMP/). "
-             "Reusing a directory overwrites these files.",
+        help=help_text or ("Save summary.csv and run.log here (default: output/lessonNN/TIMESTAMP/). "
+                          "Reusing a directory overwrites these files."),
     )
 
 

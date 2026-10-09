@@ -60,12 +60,12 @@ def plot_comparison(experiments, gamma):
     return fig
 
 
-def plot_discount(episode):
+def plot_discount(episode, label="episode"):
     fig, ax = plotting().subplots()
     gammas = [i / 100 for i in range(101)]
     ax.plot(gammas, [episode.discounted_return(g) for g in gammas])
     ax.set(xlabel="Discount gamma", ylabel="Recorded return",
-           title="One recorded trajectory, different discounts")
+           title=f"One recorded trajectory, different discounts: {label}")
     fig.tight_layout()
     return fig
 

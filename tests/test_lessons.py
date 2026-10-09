@@ -31,6 +31,14 @@ def temporary_working_directory():
 
 
 class LessonChecks(unittest.TestCase):
+    def setUp(self):
+        home = tempfile.TemporaryDirectory()
+        self.addCleanup(home.cleanup)
+        self.test_home = Path(home.name)
+        home_patch = patch.object(Path, "home", return_value=self.test_home)
+        home_patch.start()
+        self.addCleanup(home_patch.stop)
+
     def test_saved_paths_default_and_verbose_preserve_saved_results(self):
         examples = [
             (lesson01, [], "success_rate", "episode=1 steps=4"),
@@ -137,7 +145,8 @@ class LessonChecks(unittest.TestCase):
                     with contextlib.redirect_stdout(output):
                         cli.main([name] + arguments + ["--verbose"])
                     self.assertIn(expected, output.getvalue())
-                    self.assertTrue(list((Path("output") / name).glob("*/run.log")))
+                    root = self.test_home / "learning-rl-output" / name if name == "lesson01" else Path("output") / name
+                    self.assertTrue(list(root.glob("*/run.log")))
                     with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit) as caught:
                         cli.main([name, "--help"])
                     self.assertEqual(caught.exception.code, 0)
@@ -148,7 +157,7 @@ class LessonChecks(unittest.TestCase):
             for module in ("RL", "learning_rl"):
                 for options in ([], ["--verbose"]):
                     result = subprocess.run(
-                        [sys.executable, "-m", module, "lesson01", "--quiet"] + options,
+                        [sys.executable, "-m", module, "lesson01", "--quiet", "--output-dir", "run"] + options,
                         capture_output=True, text=True, check=True,
                     )
                     if options:
@@ -159,7 +168,7 @@ class LessonChecks(unittest.TestCase):
             self.assertIsNotNone(command, "Install the project to create the RL command")
             for options in ([], ["--verbose"]):
                 result = subprocess.run(
-                    [command, "lesson01", "--quiet"] + options,
+                    [command, "lesson01", "--quiet", "--output-dir", "run"] + options,
                     capture_output=True, text=True, check=True,
                 )
                 if options:
@@ -266,7 +275,8 @@ class LessonChecks(unittest.TestCase):
         with temporary_working_directory():
             for module, arguments in examples:
                 with self.subTest(module=module.__name__):
-                    root = Path("output") / module.__name__.rsplit(".", 1)[-1]
+                    root = (self.test_home / "learning-rl-output/lesson01" if module is lesson01 else
+                            Path("output") / module.__name__.rsplit(".", 1)[-1])
                     with patch.object(sys, "argv", [module.__name__, "--help"]), \
                          contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit):
                         module.main()
@@ -314,6 +324,62 @@ class LessonChecks(unittest.TestCase):
 
 
 class PlotChecks(unittest.TestCase):
+    def test_selection_preserves_batch_data_and_results(self):
+        import matplotlib
+        matplotlib.use("Agg")
+        plots = importlib.import_module("learning_rl.plotting.lesson01")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            common = ["--compare", "--episodes", "7", "--quiet"]
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                lesson01.main(common + ["--output-dir", str(root / "baseline")])
+                self.assertFalse((root / "baseline/plots").exists())
+                with patch.object(lesson01, "plot_comparison", wraps=plots.plot_comparison) as comparison:
+                    lesson01.main(common + ["--output-dir", str(root / "selected"),
+                                           "--plot-types",
+                                           "trajectory", "discount", "comparison",
+                                           "--plot-episode-ids", "2", "7"])
+            self.assertEqual({p.name for p in (root / "selected/plots").glob("*.png")},
+                             {f"{policy}-{number}-{kind}.png"
+                              for policy in ("right", "random") for number in (2, 7)
+                              for kind in ("trajectory", "discount")} | {"comparison.png"})
+            self.assertEqual([len(es) for es in comparison.call_args.args[0].values()], [7, 7])
+            self.assertEqual((root / "baseline/summary.csv").read_bytes(),
+                             (root / "selected/summary.csv").read_bytes())
+
+    def test_default_figure_directory_is_independent_of_launch_directory(self):
+        import matplotlib
+        matplotlib.use("Agg")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with patch.object(lesson01.Path, "home", return_value=root / "home"), \
+                 contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                for _ in range(2):
+                    with temporary_working_directory():
+                        launched = Path.cwd()
+                        lesson01.main(["--plot-types", "rewards"])
+                        self.assertFalse(list(launched.rglob("*.png")))
+            figures = list((root / "home/learning-rl-output/lesson01").glob("*/plots/right-1-rewards.png"))
+            self.assertEqual(len(figures), 2)
+            for figure in figures:
+                self.assertTrue((figure.parent.parent / "summary.csv").exists())
+                self.assertTrue((figure.parent.parent / "run.log").exists())
+
+    def test_invalid_plot_selection_creates_no_output(self):
+        invalid = [["--plot-episodes", "1"],
+                   ["--plot-types", "unknown"],
+                   ["--plot-types", "all", "--plot-episode-ids", "0"],
+                   ["--plot-types", "all", "--episodes", "2", "--plot-episode-ids", "3"],
+                   ["--plot-types", "all", "--plot-episodes", "1", "--plot-episode-ids", "1"],
+                   ["--plots"]]
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "run"
+            for arguments in invalid:
+                with self.subTest(arguments=arguments), self.assertRaises(SystemExit), \
+                     contextlib.redirect_stderr(io.StringIO()):
+                    lesson01.main(arguments + ["--output-dir", str(output)])
+                self.assertFalse(output.exists())
+
     def test_all_plot_types_and_saved_cli_output(self):
         import matplotlib
         matplotlib.use("Agg")
@@ -331,14 +397,15 @@ class PlotChecks(unittest.TestCase):
                 plots.plotting().close(fig)
             terminal, errors = io.StringIO(), io.StringIO()
             with patch.object(sys, "argv", ["lesson01", "--compare", "--episodes", "2",
-                                            "--quiet", "--plot-episodes", "1", "--plots", output]), \
+                                            "--quiet", "--plot-episodes", "1", "--plot-types", "all", "--output-dir", output]), \
                  contextlib.redirect_stdout(terminal), contextlib.redirect_stderr(errors):
                 lesson01.main()
             self.assertEqual(len(terminal.getvalue().splitlines()), 2)
             self.assertRegex(terminal.getvalue().splitlines()[0], r"^Summary saved to .+summary\.csv$")
-            self.assertEqual(terminal.getvalue().splitlines()[1], f"Plots saved to {Path(output).resolve()}")
+            self.assertEqual(terminal.getvalue().splitlines()[1], f"Plots saved to {Path(output).resolve() / 'plots'}")
             self.assertRegex(errors.getvalue(), r"^Output saved to .+run\.log\n$")
-            self.assertEqual(len(list(Path(output).glob("*.png"))), 13)
+            self.assertEqual(len(list(Path(output).glob("*.png"))), 5)
+            self.assertEqual(len(list((Path(output) / "plots").glob("*.png"))), 8)
         self.assertFalse(plots.plotting().get_fignums())
 
 

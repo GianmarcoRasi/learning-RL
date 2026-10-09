@@ -37,10 +37,11 @@ All options are optional. An option that takes a value requires that value when 
 | `--trace` | optional | No value; flag. Default: disabled. | Record every transition in `run.log`; also display it with `--verbose`. |
 | `--quiet` | optional | No value; flag. Default: disabled. | Suppress episode summaries; retain the final table and any requested trace. |
 | `--compare` | optional | No value; flag. Default: disabled. | Run both registered policies; override `--policy`. |
-| `--plots` | optional | Placeholder: `PLOTS_DIRECTORY`; relative or absolute directory path. Default: no plots. | Save PNG plots in this directory, creating it if needed. |
-| `--plot-episodes` | optional | Placeholder: `PLOT_EPISODES`; integer ≥ 1. Default: `3`. | Maximum episodes per policy for individual trajectory and reward plots; used with `--plots`. |
+| `--plot-types` | optional | One or more of `trajectory`, `rewards`, `discount`, `comparison`, `running-mean`, or `all`. Default: no plots. | Enable selected figures and save them in the run directory’s `plots/` subdirectory. |
+| `--plot-episodes` | optional | Placeholder: `PLOT_EPISODES`; integer ≥ 1. Default: `3`. | Plot the first N available episodes per policy for trajectory, reward and discount figures. Requires `--plot-types`; mutually exclusive with `--plot-episode-ids`. |
+| `--plot-episode-ids` | optional | One or more integers from 1 through `EPISODES`. | Plot specific episode numbers per policy for trajectory, reward and discount figures. Requires `--plot-types`; mutually exclusive with `--plot-episodes`. Does not filter batch summaries. |
 | `--verbose` | optional | No value; flag. Default: disabled. | Also display output and summary tables in the terminal. |
-| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson01/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `~/learning-rl-output/lesson01/TIMESTAMP/`. | Save `summary.csv`, `run.log` and requested figures in `plots/`, creating directories if needed. Reusing a directory overwrites matching files and retains other files. |
 
 ### Registered policy values
 
@@ -51,7 +52,7 @@ All options are optional. An option that takes a value requires that value when 
 
 ### Lesson output
 
-Lesson commands automatically save summary tables to `output/lesson01/TIMESTAMP/summary.csv`
+Lesson commands automatically save summary tables to `~/learning-rl-output/lesson01/TIMESTAMP/summary.csv`
 and other output to `run.log` in the same directory. Every successful run prints the
 saved-file paths. Add `--verbose` to also display results, diagnostics and summary
 tables in the terminal.
@@ -119,11 +120,11 @@ RL lesson01 --policy right --trace
 ```
 
 ```text
-Summary saved to output/lesson01/TIMESTAMP/summary.csv
-Output saved to output/lesson01/TIMESTAMP/run.log
+Summary saved to HOME_DIRECTORY/learning-rl-output/lesson01/TIMESTAMP/summary.csv
+Output saved to HOME_DIRECTORY/learning-rl-output/lesson01/TIMESTAMP/run.log
 ```
 
-`TIMESTAMP` stands for the new directory created for this run, for example `20261009-165307-445575`. Both files belong to the same run; path separators depend on your operating system. Open `run.log` for the trace and episode summary, and `summary.csv` for the summary table. See [Lesson output](#lesson-output) for details.
+`HOME_DIRECTORY` is your home directory. `TIMESTAMP` stands for the new directory created for this run, for example `20261009-165307-445575`. Both files belong to the same run; path separators depend on your operating system. Open `run.log` for the trace and episode summary, and `summary.csv` for the summary table. See [Lesson output](#lesson-output) for details.
 
 The recorded transitions and episode summary in `run.log` are:
 
@@ -172,17 +173,42 @@ Add `--verbose` to either command to also display the recorded results in the te
 
 ### Generate plots
 
-Visualize the same 100-episode comparison, using the first episode of each policy for the individual plots:
+Use `--plot-types` to enable figures. All run artifacts share one output directory, regardless of where you launch the command:
 
 ```bash
-RL lesson01 --compare --episodes 100 --seed 7 --quiet --plot-episodes 1 --plots output/lesson01/reference-plots/plots
+RL lesson01 --compare --episodes 100 --plot-types comparison running-mean
+```
+
+The default run directory is `~/learning-rl-output/lesson01/TIMESTAMP/` (`~` means your home directory). It contains `summary.csv`, `run.log`, and a `plots/` subdirectory when figures are requested. Every run creates a fresh timestamped directory. Use `--output-dir PATH` to choose the directory for all these artifacts; explicit relative paths resolve from the launch directory. See [output conventions](../docs/command-outputs.md).
+
+Plot selection has two scopes:
+
+| Scope | Plot types | Data used |
+| --- | --- | --- |
+| Individual episode | `trajectory`, `rewards`, `discount` | Each selected episode of each policy gets its own PNG. Default: first three available episodes. Use `--plot-episodes N` or `--plot-episode-ids I J`. |
+| Batch summary | `comparison`, `running-mean` | All `--episodes` episodes of each policy, including truncated episodes. Episode plot selection does not change these summaries. |
+
+`--compare` runs both policies and includes both in summary figures; otherwise, summary figures describe only the selected policy. `--episodes` controls the experiment sample size, while `--plot-episodes` and `--plot-episode-ids` control only individual figures. Running means follow the original episode order. These commands compare policies within one run, not summaries from separate runs or different environment settings.
+
+For example, inspect episodes 2 and 7, while still summarizing all 100 episodes per policy:
+
+```bash
+RL lesson01 --compare --episodes 100 --plot-types trajectory discount comparison --plot-episode-ids 2 7
+```
+
+Use `--plot-types all` to save all five types; omit `--plot-types` for a text-only run. `--plot-episodes` applies to trajectory, reward and discount plots, so each selected episode can be rescored across discount factors.
+
+Visualize the same 100-episode comparison shown above, using the first episode of each policy for the individual plots:
+
+```bash
+RL lesson01 --compare --episodes 100 --seed 7 --quiet --plot-episodes 1 --plot-types all
 ```
 
 ```text
-Plots saved to WORKING_DIRECTORY/output/lesson01/reference-plots/plots
+Plots saved to HOME_DIRECTORY/learning-rl-output/lesson01/TIMESTAMP/plots
 ```
 
-This is the additional terminal message; the summary and log paths are reported as in the first command, with a new `TIMESTAMP`. `WORKING_DIRECTORY` stands for the directory from which you ran the command. The saved summary is identical to the batch comparison above: recording and plotting consume no random draws.
+This is the additional terminal message; the summary and log paths are reported as in the first command, with a new `TIMESTAMP`. `HOME_DIRECTORY` stands for your home directory; the plots, summary and log share the same `TIMESTAMP`. The saved summary is identical to the batch comparison above: recording and plotting consume no random draws.
 
 The command saves the eight PNG files shown below without opening windows. Use distinct plot directories for experiments you want to keep, since later runs reuse these filenames. See the [command options table](#command-options) for other settings.
 
@@ -270,13 +296,13 @@ For all exercises, use the supplied program. Include your commands, summary rows
 
 ### Solutions — Exercises 1–5
 
-Try each exercise before reading its solution. Append the indicated `--plots` option to save plots; omit it for text-only runs. Matplotlib is already included in the standard setup.
+Try each exercise before reading its solution. The commands below select the relevant figures and use the default figure directory. Omit the plot-selection options for text-only runs. Matplotlib is already included in the standard setup.
 
 #### 1. Compare policies and estimate stability
 
 ```bash
-RL lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/100/plots
-RL lesson01 --compare --episodes 1000 --seed 7 --quiet --plots output/lesson01/1000/plots
+RL lesson01 --compare --episodes 100 --seed 7 --quiet --plot-types comparison running-mean
+RL lesson01 --compare --episodes 1000 --seed 7 --quiet --plot-types comparison running-mean
 ```
 
 Always-right takes four steps, earns total reward `7`, and has return `4.58` at the default discount, with success rate one. Random episodes have variable lengths and returns. More episodes generally give a more stable estimate; they do not train this fixed policy or guarantee a better mean. The running mean can still fluctuate.
@@ -286,7 +312,7 @@ Without a cutoff, the expected number of moves from position zero for a uniform 
 #### 2. Recognize truncation
 
 ```bash
-RL lesson01 --policy right --max-steps 2 --trace --plots output/lesson01/cutoff/plots
+RL lesson01 --policy right --max-steps 2 --trace --plot-types trajectory rewards
 ```
 
 The trajectory is $0\to1\to2$, with rewards $-1,-1$. Expect `steps=2`, `reward_sum=-2.000`, `return=-1.900`, `terminated=False`, `truncated=True`, and success rate zero. The trajectory ends with an X at position two, below the goal. The final cumulative reward is a partial sum, not an estimate of the unobserved continuation. Reaching position four requires four moves.
@@ -294,9 +320,9 @@ The trajectory is $0\to1\to2$, with rewards $-1,-1$. Expect `steps=2`, `reward_s
 #### 3. Change the discount
 
 ```bash
-RL lesson01 --policy right --gamma 0 --trace --plots output/lesson01/gamma0/plots
-RL lesson01 --policy right --gamma 0.5 --trace --plots output/lesson01/gamma05/plots
-RL lesson01 --policy right --gamma 1 --trace --plots output/lesson01/gamma1/plots
+RL lesson01 --policy right --gamma 0 --trace --plot-types rewards discount
+RL lesson01 --policy right --gamma 0.5 --trace --plot-types rewards discount
+RL lesson01 --policy right --gamma 1 --trace --plot-types rewards discount
 ```
 
 Actions and states remain identical because this policy does not use the discount. For rewards $[-1,-1,-1,10]$, the returns are respectively $-1$, $-0.5$, and $7$. The reward sum remains $7$. The immediate reward panels match, but cumulative discounted reward changes. The discount plot rescales the same recorded rewards without resampling actions. With a random policy, keeping the same seed and all other arguments also preserves trajectories when only the discount changes.
@@ -304,9 +330,9 @@ Actions and states remain identical because this policy does not use the discoun
 #### 4. Change reward design
 
 ```bash
-RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward -1 --goal-reward 10 --plots output/lesson01/cost/plots
-RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward 0 --goal-reward 1 --plots output/lesson01/sparse/plots
-RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 0.9 --step-reward 0 --goal-reward 1 --plots output/lesson01/sparse-discounted/plots
+RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward -1 --goal-reward 10 --plot-types comparison running-mean
+RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward 0 --goal-reward 1 --plot-types comparison running-mean
+RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 0.9 --step-reward 0 --goal-reward 1 --plot-types comparison running-mean
 ```
 
 Always-right earns `7` with movement costs and `1` with sparse rewards at $\gamma=1$. For a successful trajectory of length $T$, the respective undiscounted returns are $11-T$ and $1$. The first rule favors shorter successful paths; the second gives all successes the same return. A truncated sparse-reward run earns zero, so its mean return at $\gamma=1$ equals its success rate. At $0<\gamma<1$, a successful sparse-reward trajectory has return $\gamma^{T-1}$, favoring earlier completion. Changing rewards or discount alone does not change either fixed policy's actions. Compare returns within each reward rule; their scales differ across rules.
@@ -314,9 +340,9 @@ Always-right earns `7` with movement costs and `1` with sparse rewards at $\gamm
 #### 5. Compare route lengths
 
 ```bash
-RL lesson01 --compare --size 3 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size3/plots
-RL lesson01 --compare --size 5 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size5/plots
-RL lesson01 --compare --size 8 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size8/plots
+RL lesson01 --compare --size 3 --episodes 1000 --seed 7 --quiet --plot-types trajectory --plot-episodes 1
+RL lesson01 --compare --size 5 --episodes 1000 --seed 7 --quiet --plot-types trajectory --plot-episodes 1
+RL lesson01 --compare --size 8 --episodes 1000 --seed 7 --quiet --plot-types trajectory --plot-episodes 1
 ```
 
 Copy both summary rows for each size into your results table and attach the `right-1-trajectory.png` images. Always-right takes 2, 4 and 7 moves respectively, succeeds every time, and has discounted returns `8`, `4.58` and `0.62882` at the default discount. Its reward sums are `9`, `7` and `4`. Longer routes add movement costs and delay the goal reward. Random runs vary; report the measured means and truncation counts rather than assuming every episode finishes within the default 100-step limit. The policies remain fixed throughout.

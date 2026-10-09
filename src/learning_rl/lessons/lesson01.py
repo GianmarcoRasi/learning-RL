@@ -2,6 +2,7 @@ import argparse
 import math
 import random
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from statistics import mean
 
@@ -83,22 +84,42 @@ def main(argv=None, *, prog=None):
     parser.add_argument("--trace", action="store_true")
     parser.add_argument("--quiet", action="store_true", help="Suppress episode summaries; keep table and any requested trace.")
     parser.add_argument("--compare", action="store_true", help="Run right and random; overrides --policy.")
-    parser.add_argument("--plots", type=Path, help="Save five kinds of PNG plots in this directory.")
-    parser.add_argument("--plot-episodes", type=int, default=3,
-                        help="Episodes per policy to plot individually (default: 3).")
-    add_output_argument(parser)
+    parser.add_argument("--plot-types", nargs="+",
+                        choices=["all", "trajectory", "rewards", "discount", "comparison", "running-mean"],
+                        help="Enable selected plots, or all; save in OUTPUT_DIRECTORY/plots (default: no plots).")
+    episode_selection = parser.add_mutually_exclusive_group()
+    episode_selection.add_argument("--plot-episodes", type=int,
+                                   help="First N episodes per policy for episode plots (default: 3).")
+    episode_selection.add_argument("--plot-episode-ids", nargs="+", type=int,
+                                   help="Specific 1-based episode numbers per policy; requires --plot-types. "
+                                        "Summary plots always use all episodes.")
+    add_output_argument(parser, help_text="Save summary.csv, run.log and requested plots/ here "
+                        "(default: ~/learning-rl-output/lesson01/TIMESTAMP/). "
+                        "Reusing a directory overwrites matching files.")
     args = parser.parse_args(argv)
-    if args.size < 2 or args.episodes < 1 or args.max_steps < 1 or args.plot_episodes < 1:
+    if args.size < 2 or args.episodes < 1 or args.max_steps < 1 or (args.plot_episodes is not None and args.plot_episodes < 1):
         parser.error("size >= 2; episodes, max-steps and plot-episodes >= 1 required")
     if not 0 <= args.gamma <= 1:
         parser.error("gamma must be in [0, 1]")
     if not all(math.isfinite(r) for r in (args.step_reward, args.goal_reward)):
         parser.error("rewards must be finite")
-    if args.plots:
+    if not args.plot_types and (args.plot_episode_ids or args.plot_episodes is not None):
+        parser.error("plot-episodes and plot-episode-ids require --plot-types")
+    if args.plot_episode_ids and any(n < 1 or n > args.episodes for n in args.plot_episode_ids):
+        parser.error("plot-episode-ids must be between 1 and episodes")
+    plot_types = set(args.plot_types or [])
+    if "all" in plot_types:
+        plot_types = {"trajectory", "rewards", "discount", "comparison", "running-mean"}
+    episode_ids = (sorted(set(args.plot_episode_ids)) if args.plot_episode_ids else
+                   range(1, min(args.episodes, args.plot_episodes or 3) + 1))
+    if plot_types:
         try:
             plotting()
         except ImportError:
             parser.error("Plotting requires Matplotlib: python -m pip install matplotlib")
+    if args.output_dir is None:
+        args.output_dir = (Path.home() / "learning-rl-output" / "lesson01" /
+                           datetime.now().strftime("%Y%m%d-%H%M%S-%f"))
     with lesson_output("lesson01", args.output_dir, verbose=args.verbose) as directory:
         experiments = {}
         for policy in (["right", "random"] if args.compare else [args.policy]):
@@ -123,23 +144,30 @@ def main(argv=None, *, prog=None):
         save_summary(directory,
                      ["policy", "episodes", "reward_sum", "return", "steps", "success_rate", "truncated"],
                      rows)
-        if args.plots:
-            args.plots.mkdir(parents=True, exist_ok=True)
+        if plot_types:
+            plots_directory = directory / "plots"
+            plots_directory.mkdir(parents=True, exist_ok=True)
             plt = plotting()
 
             def save(fig, name):
-                fig.savefig(args.plots / name, dpi=150)
+                fig.savefig(plots_directory / name, dpi=150)
                 plt.close(fig)
 
             for policy, episodes in experiments.items():
-                for number, episode in enumerate(episodes[:args.plot_episodes], 1):
+                for number in episode_ids:
+                    episode = episodes[number - 1]
                     label = f"{policy}, episode {number}"
-                    save(plot_trajectory(episode, args.size - 1, label), f"{policy}-{number}-trajectory.png")
-                    save(plot_rewards(episode, args.gamma, label), f"{policy}-{number}-rewards.png")
-                save(plot_discount(episodes[0]), f"{policy}-1-discount.png")
-            save(plot_comparison(experiments, args.gamma), "comparison.png")
-            save(plot_running_mean(experiments, args.gamma), "running-mean.png")
-            report_saved_path("Plots", args.plots.resolve())
+                    if "trajectory" in plot_types:
+                        save(plot_trajectory(episode, args.size - 1, label), f"{policy}-{number}-trajectory.png")
+                    if "rewards" in plot_types:
+                        save(plot_rewards(episode, args.gamma, label), f"{policy}-{number}-rewards.png")
+                    if "discount" in plot_types:
+                        save(plot_discount(episode, label), f"{policy}-{number}-discount.png")
+            if "comparison" in plot_types:
+                save(plot_comparison(experiments, args.gamma), "comparison.png")
+            if "running-mean" in plot_types:
+                save(plot_running_mean(experiments, args.gamma), "running-mean.png")
+            report_saved_path("Plots", plots_directory.resolve())
 
 
 if __name__ == "__main__":

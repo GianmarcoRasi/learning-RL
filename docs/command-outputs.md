@@ -10,6 +10,9 @@ the saved-file paths by default. Add `--verbose` to also display summary tables 
 output in the terminal. The `run.log` in the same directory records other output,
 such as traces, diagnostics, and warnings, plus a message pointing to the saved CSV;
 it does not duplicate the summary tables.
+Lesson 01 defaults to `~/learning-rl-output/lesson01/TIMESTAMP/` instead of a
+launch-directory-relative path. Its CSV, log and requested `plots/` all belong to
+that same run directory. Other lessons use the `output/` paths shown below.
 Timestamps include microseconds so separate runs preserve previous results.
 Help and argument validation errors do not create logs; errors stay in the terminal.
 
@@ -73,7 +76,7 @@ episode summaries and an explicit `--trace` still records transitions in `run.lo
 
 ## Choose a run directory
 
-Add `--output-dir PATH` to a lesson command to choose where its CSV and log are saved.
+Add `--output-dir PATH` to a lesson command to choose where its CSV and log are saved, together with any lesson 01 figures in `plots/`.
 The program creates the directory automatically:
 
 ```bash
@@ -84,3 +87,24 @@ RL lesson04 --output-dir output/lesson04/my-run
 ```
 
 Use distinct names for different settings. Reusing a directory overwrites `summary.csv` and `run.log`.
+
+## Lesson 01 figures
+
+`RL lesson01 --plot-types all` saves all figure types in the run directory’s
+`plots/` subdirectory, alongside `summary.csv` and `run.log`. The default run
+directory is `~/learning-rl-output/lesson01/TIMESTAMP/`, independently of the
+current directory. Each invocation creates a new timestamped run directory.
+
+Use `--output-dir PATH` to choose the directory for all run artifacts. Explicit
+relative paths resolve from the current directory. Reusing a directory overwrites
+matching files and leaves unrelated files, including figures from earlier selections,
+in place.
+
+Use `--plot-types trajectory rewards discount comparison running-mean` to select
+one or more figure types, or `--plot-types all` for all five. Without this option,
+no figures are saved. Trajectory, reward and discount figures use the first three
+available episodes per policy by default; `--plot-episodes N` or
+`--plot-episode-ids I J` changes that selection and requires `--plot-types`.
+Comparison and running-mean figures always use all episodes of each policy in the
+run. `--compare` includes both policies. These commands do not load or compare
+summary CSV files from separate runs.

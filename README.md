@@ -124,7 +124,7 @@ When a lesson introduces a term, add its definition and lesson reference to the 
 - `lessons-hands-on/`: command references, usage tutorials, practical exercises, and their solutions.
 - `docs/`: command-output documentation and study flashcards in `docs/flashcards/`.
 - `tests/`: numeric, CLI, and plotting checks.
-- `output/`: automatically saved command logs, grouped by lesson and run, plus optional plots. See [output conventions](docs/command-outputs.md). Generated results are local and ignored by Git.
+- `output/`: default command logs for lessons 02–04, grouped by lesson and run. Lesson 01 saves its CSV, log and optional figures under `~/learning-rl-output/lesson01/TIMESTAMP/` by default; `--output-dir` overrides the run directory. See [output conventions](docs/command-outputs.md). Generated results are local and ignored by Git.
 
 Start with the [Lesson 1 theory](lessons/RL-lesson-01-rl-foundations-01.md)
 and its [hands-on tutorial](lessons-hands-on/RL-lesson-01-rl-foundations-02-hands-on.md).
