@@ -15,9 +15,11 @@ The walkthrough and exercises use the supplied command-line programs. Run experi
 
 ### Lesson output
 
-Lesson commands automatically save printed results to `output/lesson03/TIMESTAMP/run.log`
-and display them in the terminal. Each run gets a new directory. Use `--output-dir`
-to choose a directory; reusing it overwrites its log. See [output conventions](../docs/command-outputs.md).
+Lesson commands automatically save summary tables to `output/lesson03/TIMESTAMP/summary.csv`
+and other output to `run.log` in the same directory. Tables also appear in the terminal;
+the log points to the CSV instead of duplicating the tables.
+Each run gets a new directory. Use `--output-dir` to choose a directory; reusing it
+overwrites its CSV and log. See [output conventions](../docs/command-outputs.md).
 
 ## 1. Guided tutorial — Run the lab
 

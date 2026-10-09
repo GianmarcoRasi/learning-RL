@@ -1,6 +1,6 @@
 import argparse
 
-from learning_rl.lessons.output import add_output_argument, lesson_output
+from learning_rl.lessons.output import add_output_argument, lesson_output, save_summary, terminal_output
 
 from learning_rl.environments.lineworld import transition
 
@@ -75,7 +75,8 @@ def main(argv=None, *, prog=None):
         parser.error("size >= 2 and max-iterations >= 1 required")
     if not 0 <= args.gamma < 1 or not args.theta > 0:
         parser.error("gamma in [0, 1) and theta > 0 required")
-    with lesson_output("lesson04", args.output_dir):
+    with lesson_output("lesson04", args.output_dir) as directory:
+        rows = []
         for name, algorithm in [("policy", policy_iteration), ("value", value_iteration)]:
             if args.algorithm not in (name, "both"):
                 continue
@@ -84,10 +85,16 @@ def main(argv=None, *, prog=None):
             residual = max(abs(values[s] - max(action_value(s, a, values, args.size,
                                                             args.gamma) for a in (0, 1)))
                            for s in range(args.size - 1))
-            print(f"algorithm={name} rounds={rounds} sweeps={sweeps} residual={residual:.3g}")
+            with terminal_output():
+                print(f"algorithm={name} rounds={rounds} sweeps={sweeps} residual={residual:.3g}")
             for state, value in enumerate(values):
                 action = "terminal" if state == args.size - 1 else ("right" if policy[state] else "left")
-                print(f"state={state} value={value:.6f} action={action}")
+                with terminal_output():
+                    print(f"state={state} value={value:.6f} action={action}")
+                rows.append(dict(algorithm=name, state=state, value=value, action=action,
+                                 rounds=rounds, sweeps=sweeps, residual=residual))
+        save_summary(directory, ["algorithm", "state", "value", "action", "rounds", "sweeps", "residual"],
+                     rows)
 
 
 if __name__ == "__main__":

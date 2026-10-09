@@ -1,6 +1,7 @@
 """Checks for shared rules, published reference results, and module entry points."""
 
 import contextlib
+import csv
 import importlib
 import io
 import os
@@ -30,6 +31,63 @@ def temporary_working_directory():
 
 
 class LessonChecks(unittest.TestCase):
+    def test_csv_summary_values_and_overwrite(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+
+            def run(module, arguments):
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    module.main(arguments + ["--output-dir", str(directory)])
+                with (directory / "summary.csv").open(encoding="utf-8", newline="") as file:
+                    return list(csv.DictReader(file))
+
+            rows = run(lesson01, ["--compare", "--episodes", "3", "--quiet"])
+            self.assertEqual([row["policy"] for row in rows], ["right", "random"])
+            self.assertEqual(int(rows[0]["episodes"]), 3)
+            self.assertAlmostEqual(float(rows[0]["return"]), 4.58)
+            self.assertEqual(float(rows[0]["reward_sum"]), 7)
+            self.assertEqual(float(rows[0]["steps"]), 4)
+            self.assertEqual(float(rows[0]["success_rate"]), 1)
+            rows = run(lesson01, ["--quiet", "--max-steps", "2"])
+            self.assertEqual(len(rows), 1)  # Reusing a directory replaces the previous CSV.
+            self.assertEqual(int(rows[0]["truncated"]), 1)
+            self.assertAlmostEqual(float(rows[0]["return"]), -1.9)
+            self.assertEqual(float(rows[0]["success_rate"]), 0)
+
+            rows = run(lesson02, ["--method", "compare", "--right-prob", "1", "--episodes", "2"])
+            self.assertEqual(len(rows), 10)
+            for row in rows:
+                self.assertAlmostEqual(float(row["value"]), [4.58, 6.2, 8, 10, 0][int(row["state"])])
+            self.assertEqual(rows[0]["visits"], "")
+            self.assertEqual(rows[5]["visits"], "2")
+            self.assertEqual(rows[5]["truncated_episodes"], "0")
+            rows = run(lesson02, ["--method", "mc", "--right-prob", "0", "--episodes", "1",
+                                  "--max-steps", "3"])
+            self.assertEqual(len(rows), 5)
+            self.assertAlmostEqual(float(rows[0]["value"]), -1.87)
+            self.assertEqual(rows[0]["truncated_episodes"], "1")
+            self.assertEqual(rows[1]["value"], "")
+            self.assertEqual(rows[-1]["value"], "0.0")
+            self.assertEqual(rows[0]["iterations"], "")
+            rows = run(lesson02, ["--method", "dp"])
+            self.assertEqual({row["method"] for row in rows}, {"dp"})
+
+            rows = run(lesson03, ["--runs", "1", "--steps", "20", "--epsilons", "0.1"])
+            expected = lesson03.experiment([0, 0.2, 1], 20, 0.1, 0, 7, 0)
+            self.assertEqual(len(rows), 1)
+            for column, value in zip(["mean_reward", "mean_pseudo_regret", "optimal_fraction"], expected):
+                self.assertEqual(float(rows[0][column]), value)
+            self.assertEqual(float(rows[0]["reward_SE"]), 0)
+
+            for selection, count in [("both", 10), ("policy", 5), ("value", 5)]:
+                rows = run(lesson04, ["--algorithm", selection])
+                self.assertEqual(len(rows), count)
+                for row in rows:
+                    state = int(row["state"])
+                    self.assertAlmostEqual(float(row["value"]), [4.58, 6.2, 8, 10, 0][state])
+                    self.assertEqual(row["action"], "terminal" if state == 4 else "right")
+                    self.assertLess(float(row["residual"]), 1e-9)
+
     def test_project_dispatch_forwards_lesson_arguments(self):
         examples = [("lesson01", ["--quiet"], "4.580"),
                     ("lesson02", ["--method", "dp", "--right-prob", "1"], "4.580000"),
@@ -173,16 +231,41 @@ class LessonChecks(unittest.TestCase):
                         with patch.object(sys, "argv", [module.__name__] + arguments), \
                              contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
                             module.main()
-                        self.assertTrue(any(log.read_text(encoding="utf-8") == output.getvalue()
-                                            for log in root.glob("*/run.log")))
+                        logs = [log.read_text(encoding="utf-8") for log in root.glob("*/run.log")]
+                        self.assertTrue(any("Summary saved to " in log and
+                                            all(line in output.getvalue() for line in log.splitlines())
+                                            for log in logs))
                     self.assertEqual(len(list(root.glob("*/run.log"))), 2)
+                    self.assertEqual(len(list(root.glob("*/summary.csv"))), 2)
                     output = io.StringIO()
                     with patch.object(sys, "argv", [module.__name__] + arguments +
                                       ["--output-dir", str(root / "custom")]), \
                          contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
                         module.main()
-                    self.assertEqual((root / "custom/run.log").read_text(encoding="utf-8"),
-                                     output.getvalue())
+                    log = (root / "custom/run.log").read_text(encoding="utf-8")
+                    self.assertIn(f"Summary saved to {root / 'custom' / 'summary.csv'}", log)
+                    table_marker = {lesson01: "success_rate", lesson02: "dp_value=",
+                                    lesson03: "mean_reward=", lesson04: "action="}[module]
+                    self.assertIn(table_marker, output.getvalue())
+                    self.assertNotIn(table_marker, log)
+                    self.assertTrue(all(line in output.getvalue() for line in log.splitlines()))
+
+    def test_logs_keep_traces_and_warnings_without_summary_tables(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                lesson01.main(["--trace", "--quiet", "--output-dir", str(directory)])
+            log = (directory / "run.log").read_text(encoding="utf-8")
+            self.assertIn("state=3 action=1 next_state=4 reward=10", log)
+            self.assertNotIn("Summary (gamma=", log)
+            self.assertIn("summary.csv", log)
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                lesson02.main(["--method", "mc", "--right-prob", "0", "--episodes", "1",
+                               "--max-steps", "1", "--output-dir", str(directory)])
+            log = (directory / "run.log").read_text(encoding="utf-8")
+            self.assertIn("WARNING: zero continuation", log)
+            self.assertNotIn("mc_value=", log)
+            self.assertIn("summary.csv", log)
 
 
 class PlotChecks(unittest.TestCase):

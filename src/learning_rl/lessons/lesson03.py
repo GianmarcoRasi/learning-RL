@@ -2,7 +2,7 @@ import argparse
 import random
 import statistics
 
-from learning_rl.lessons.output import add_output_argument, lesson_output
+from learning_rl.lessons.output import add_output_argument, lesson_output, save_summary, terminal_output
 
 
 def experiment(means, steps, epsilon, initial, seed, run):
@@ -52,19 +52,28 @@ def main(argv=None, *, prog=None):
         parser.error("means and initial must be finite")
     if not all(0 <= e <= 1 for e in args.epsilons):
         parser.error("epsilons must be in [0, 1]")
-    with lesson_output("lesson03", args.output_dir):
+    with lesson_output("lesson03", args.output_dir) as directory:
+        rows = []
         for epsilon in args.epsilons:
             results = [experiment(args.means, args.steps, epsilon, args.initial, args.seed, run)
                        for run in range(args.runs)]
             rewards = [r[0] for r in results]
             se = statistics.stdev(rewards) / args.runs ** 0.5 if args.runs > 1 else 0.0
-            print(f"epsilon={epsilon:g} mean_reward={statistics.mean(rewards):.4f} "
-                  f"reward_SE={se:.4f} "
-                  f"mean_pseudo_regret={statistics.mean(r[1] for r in results):.2f} "
-                  f"optimal_fraction={statistics.mean(r[2] for r in results):.3f}")
+            row = dict(epsilon=epsilon, mean_reward=statistics.mean(rewards), reward_SE=se,
+                       mean_pseudo_regret=statistics.mean(r[1] for r in results),
+                       optimal_fraction=statistics.mean(r[2] for r in results))
+            rows.append(row)
+            with terminal_output():
+                print(f"epsilon={epsilon:g} mean_reward={row['mean_reward']:.4f} "
+                      f"reward_SE={se:.4f} "
+                      f"mean_pseudo_regret={row['mean_pseudo_regret']:.2f} "
+                      f"optimal_fraction={row['optimal_fraction']:.3f}")
             if args.runs == 1:
                 print("estimates=", [round(q, 4) for q in results[0][3]])
                 print("counts=", results[0][4])
+        save_summary(directory,
+                     ["epsilon", "mean_reward", "reward_SE", "mean_pseudo_regret", "optimal_fraction"],
+                     rows)
 
 
 if __name__ == "__main__":

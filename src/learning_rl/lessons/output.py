@@ -1,5 +1,6 @@
 """Save lesson output while keeping it visible in the terminal."""
 
+import csv
 import sys
 from contextlib import contextmanager, redirect_stdout
 from datetime import datetime
@@ -23,9 +24,27 @@ class _Tee:
 def add_output_argument(parser):
     parser.add_argument(
         "--output-dir", type=Path,
-        help="Save run.log here (default: output/lessonNN/TIMESTAMP/). "
-             "Reusing a directory overwrites its log.",
+        help="Save summary.csv and run.log here (default: output/lessonNN/TIMESTAMP/). "
+             "Reusing a directory overwrites these files.",
     )
+
+
+def save_summary(directory, fieldnames, rows):
+    """Write numeric results directly, without parsing formatted terminal output."""
+    path = directory / "summary.csv"
+    with path.open("w", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"Summary saved to {path}")
+
+
+@contextmanager
+def terminal_output():
+    """Display a summary table without duplicating it in the run log."""
+    stream = sys.stdout.terminal if isinstance(sys.stdout, _Tee) else sys.stdout
+    with redirect_stdout(stream):
+        yield
 
 
 @contextmanager

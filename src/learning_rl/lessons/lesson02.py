@@ -1,7 +1,7 @@
 import argparse
 import random
 
-from learning_rl.lessons.output import add_output_argument, lesson_output
+from learning_rl.lessons.output import add_output_argument, lesson_output, save_summary, terminal_output
 
 from learning_rl.environments.lineworld import transition
 
@@ -69,13 +69,16 @@ def main(argv=None, *, prog=None):
         parser.error("size >= 2 and positive count arguments required")
     if not 0 <= args.gamma < 1 or not 0 <= args.right_prob <= 1 or not args.theta > 0:
         parser.error("gamma in [0, 1), right-prob in [0, 1], theta > 0 required")
-    with lesson_output("lesson02", args.output_dir):
+    with lesson_output("lesson02", args.output_dir) as directory:
+        rows = []
         if args.method in ("dp", "compare"):
             values, iterations = evaluate(args.size, args.gamma, args.right_prob,
                                           args.theta, args.max_iterations)
             print(f"DP iterations={iterations}")
             for state, value in enumerate(values):
-                print(f"state={state} dp_value={value:.6f}")
+                with terminal_output():
+                    print(f"state={state} dp_value={value:.6f}")
+                rows.append(dict(method="dp", state=state, value=value, iterations=iterations))
         if args.method in ("mc", "compare"):
             estimates, counts, truncated = sample(args.size, args.gamma, args.right_prob,
                                                   args.episodes, args.max_steps,
@@ -83,9 +86,15 @@ def main(argv=None, *, prog=None):
             print(f"MC truncated_episodes={truncated}/{args.episodes}")
             for state, estimate in enumerate(estimates):
                 label = "unvisited" if estimate is None else f"{estimate:.6f}"
-                print(f"state={state} mc_value={label} visits={counts[state]}")
+                with terminal_output():
+                    print(f"state={state} mc_value={label} visits={counts[state]}")
+                rows.append(dict(method="mc", state=state, value=estimate, visits=counts[state],
+                                 episodes=args.episodes, truncated_episodes=truncated))
             if truncated:
                 print("WARNING: zero continuation at time limits biases full-episode MC estimates.")
+        save_summary(directory,
+                     ["method", "state", "value", "visits", "iterations", "episodes", "truncated_episodes"],
+                     rows)
 
 
 if __name__ == "__main__":

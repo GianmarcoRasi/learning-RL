@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean
 
-from learning_rl.lessons.output import add_output_argument, lesson_output
+from learning_rl.lessons.output import add_output_argument, lesson_output, save_summary, terminal_output
 
 from learning_rl.environments.lineworld import LineWorld
 from learning_rl.plotting.lesson01 import (
@@ -46,17 +46,26 @@ def run_episode(env, policy, rng, max_steps):
 
 
 def print_summary(experiments, gamma):
+    rows = []
     print(f"\nSummary (gamma={gamma:g}; returns stop at termination or cutoff)")
     print(f"{'policy':<10} {'episodes':>8} {'reward_sum':>12} {'return':>12} "
           f"{'steps':>10} {'success_rate':>13} {'truncated':>10}")
     for label, episodes in experiments.items():
-        print(f"{label:<10} {len(episodes):>8} "
-              f"{mean(sum(e.rewards) for e in episodes):>12.3f} "
-              f"{mean(e.discounted_return(gamma) for e in episodes):>12.3f} "
-              f"{mean(len(e.actions) for e in episodes):>10.3f} "
-              f"{mean(e.terminated for e in episodes):>13.3f} "
-              f"{sum(e.truncated for e in episodes):>10}")
+        row = {
+            "policy": label, "episodes": len(episodes),
+            "reward_sum": mean(sum(e.rewards) for e in episodes),
+            "return": mean(e.discounted_return(gamma) for e in episodes),
+            "steps": mean(len(e.actions) for e in episodes),
+            "success_rate": mean(e.terminated for e in episodes),
+            "truncated": sum(e.truncated for e in episodes),
+        }
+        rows.append(row)
+        print(f"{label:<10} {row['episodes']:>8} "
+              f"{row['reward_sum']:>12.3f} {row['return']:>12.3f} "
+              f"{row['steps']:>10.3f} {row['success_rate']:>13.3f} "
+              f"{row['truncated']:>10}")
     print("reward_sum, return and steps are means over all recorded episodes.")
+    return rows
 
 
 def main(argv=None, *, prog=None):
@@ -88,7 +97,7 @@ def main(argv=None, *, prog=None):
             plotting()
         except ImportError:
             parser.error("Plotting requires Matplotlib: python -m pip install matplotlib")
-    with lesson_output("lesson01", args.output_dir):
+    with lesson_output("lesson01", args.output_dir) as directory:
         experiments = {}
         for policy in (["right", "random"] if args.compare else [args.policy]):
             rng = random.Random(args.seed)
@@ -107,7 +116,11 @@ def main(argv=None, *, prog=None):
                           f"return={episode.discounted_return(args.gamma):.3f} "
                           f"terminated={episode.terminated} truncated={episode.truncated}")
             experiments[policy] = episodes
-        print_summary(experiments, args.gamma)
+        with terminal_output():
+            rows = print_summary(experiments, args.gamma)
+        save_summary(directory,
+                     ["policy", "episodes", "reward_sum", "return", "steps", "success_rate", "truncated"],
+                     rows)
         if args.plots:
             args.plots.mkdir(parents=True, exist_ok=True)
             plt = plotting()
