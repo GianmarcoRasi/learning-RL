@@ -5,7 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean
 
-from learning_rl.lessons.output import add_output_argument, lesson_output, save_summary, terminal_output
+from learning_rl.lessons.output import (
+    add_output_argument, lesson_output, report_saved_path, save_summary, terminal_output,
+)
 
 from learning_rl.environments.lineworld import LineWorld
 from learning_rl.plotting.lesson01 import (
@@ -137,7 +139,7 @@ def main(argv=None, *, prog=None):
                 save(plot_discount(episodes[0]), f"{policy}-1-discount.png")
             save(plot_comparison(experiments, args.gamma), "comparison.png")
             save(plot_running_mean(experiments, args.gamma), "running-mean.png")
-            print(f"Plots saved to {args.plots.resolve()}")
+            report_saved_path("Plots", args.plots.resolve())
 
 
 if __name__ == "__main__":

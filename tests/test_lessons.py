@@ -31,7 +31,7 @@ def temporary_working_directory():
 
 
 class LessonChecks(unittest.TestCase):
-    def test_file_only_default_and_verbose_preserve_saved_results(self):
+    def test_saved_paths_default_and_verbose_preserve_saved_results(self):
         examples = [
             (lesson01, [], "success_rate", "episode=1 steps=4"),
             (lesson01, ["--trace", "--quiet"], "success_rate", "next_state=4 reward=10"),
@@ -57,14 +57,15 @@ class LessonChecks(unittest.TestCase):
                         csv_text = (directory / "summary.csv").read_text(encoding="utf-8")
                         self.assertIn(log_marker, log)
                         self.assertNotIn(table_marker, log)
+                        self.assertEqual(output.getvalue().count("Summary saved to"), 1)
+                        self.assertEqual(errors.getvalue(), f"Output saved to {directory / 'run.log'}\n")
                         if verbose:
                             self.assertIn(table_marker, output.getvalue())
                             self.assertIn(log_marker, output.getvalue())
                             self.assertIn("Output saved to", errors.getvalue())
                             self.assertEqual((log, csv_text), saved)
                         else:
-                            self.assertEqual(output.getvalue(), "")
-                            self.assertEqual(errors.getvalue(), "")
+                            self.assertEqual(output.getvalue(), f"Summary saved to {directory / 'summary.csv'}\n")
                             saved = (log, csv_text)
 
     def test_csv_summary_values_and_overwrite(self):
@@ -153,7 +154,7 @@ class LessonChecks(unittest.TestCase):
                     if options:
                         self.assertIn("4.580", result.stdout)
                     else:
-                        self.assertEqual(result.stdout, "")
+                        self.assertRegex(result.stdout, r"^Summary saved to .+summary\.csv\n$")
             command = shutil.which("RL", path=str(Path(sys.executable).parent))
             self.assertIsNotNone(command, "Install the project to create the RL command")
             for options in ([], ["--verbose"]):
@@ -164,7 +165,7 @@ class LessonChecks(unittest.TestCase):
                 if options:
                     self.assertIn("4.580", result.stdout)
                 else:
-                    self.assertEqual(result.stdout, "")
+                    self.assertRegex(result.stdout, r"^Summary saved to .+summary\.csv\n$")
 
     def test_project_help_and_invalid_arguments_do_not_create_logs(self):
         with temporary_working_directory():
@@ -333,8 +334,10 @@ class PlotChecks(unittest.TestCase):
                                             "--quiet", "--plot-episodes", "1", "--plots", output]), \
                  contextlib.redirect_stdout(terminal), contextlib.redirect_stderr(errors):
                 lesson01.main()
-            self.assertEqual(terminal.getvalue(), "")
-            self.assertEqual(errors.getvalue(), "")
+            self.assertEqual(len(terminal.getvalue().splitlines()), 2)
+            self.assertRegex(terminal.getvalue().splitlines()[0], r"^Summary saved to .+summary\.csv$")
+            self.assertEqual(terminal.getvalue().splitlines()[1], f"Plots saved to {Path(output).resolve()}")
+            self.assertRegex(errors.getvalue(), r"^Output saved to .+run\.log\n$")
             self.assertEqual(len(list(Path(output).glob("*.png"))), 13)
         self.assertFalse(plots.plotting().get_fignums())
 

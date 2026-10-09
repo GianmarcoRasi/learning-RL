@@ -45,8 +45,9 @@ All options are optional. An option that takes a value requires that value when 
 ### Lesson output
 
 Lesson commands automatically save summary tables to `output/lesson02/TIMESTAMP/summary.csv`
-and other output to `run.log` in the same directory. Successful runs write only to files
-by default. Add `--verbose` to also display output and summary tables in the terminal.
+and other output to `run.log` in the same directory. Every successful run prints the
+saved-file paths. Add `--verbose` to also display results, diagnostics and summary
+tables in the terminal.
 The log points to the CSV instead of duplicating the tables. Read the saved files for
 the outputs discussed below, or use `--verbose` to inspect them on screen.
 Each run gets a new directory. Use `--output-dir` to choose a directory; reusing it

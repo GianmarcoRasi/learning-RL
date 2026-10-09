@@ -52,8 +52,9 @@ All options are optional. An option that takes a value requires that value when 
 ### Lesson output
 
 Lesson commands automatically save summary tables to `output/lesson01/TIMESTAMP/summary.csv`
-and other output to `run.log` in the same directory. Successful runs write only to files
-by default. Add `--verbose` to also display output and summary tables in the terminal.
+and other output to `run.log` in the same directory. Every successful run prints the
+saved-file paths. Add `--verbose` to also display results, diagnostics and summary
+tables in the terminal.
 The log points to the CSV instead of duplicating the tables. Read the saved files for
 the outputs discussed below, or use `--verbose` to inspect them on screen.
 Each run gets a new directory. Use `--output-dir` to choose a directory; reusing it
@@ -170,7 +171,7 @@ Read the two rows together. Always-right repeats the four-step route, so its mea
 
 In both tables, `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. Here both truncation counts are zero; a different seed or step limit can produce truncated random episodes.
 
-The final lines identify the saved files. Summary rows are in `summary.csv`; traces and episode summaries, when requested, are in `run.log`. See [Lesson output](#lesson-output) for their locations and contents. Without `--verbose`, the same files are saved and nothing is printed to the terminal.
+The final lines identify the saved files. Summary rows are in `summary.csv`; traces and episode summaries, when requested, are in `run.log`. See [Lesson output](#lesson-output) for their locations and contents. Without `--verbose`, the same files are saved and only their paths are printed to the terminal, including the plot directory when requested.
 
 ### Generate plots
 

@@ -5,8 +5,8 @@ Run lesson commands from any directory in the activated project environment afte
 [package installation instructions](../README.md#install-packages).
 
 Each lesson command automatically creates a directory and saves its printed
-summary tables to `output/lessonNN/TIMESTAMP/summary.csv`. Successful runs write
-only to files by default. Add `--verbose` to also display summary tables and other
+summary tables to `output/lessonNN/TIMESTAMP/summary.csv`. Successful runs print
+the saved-file paths by default. Add `--verbose` to also display summary tables and other
 output in the terminal. The `run.log` in the same directory records other output,
 such as traces, diagnostics, and warnings, plus a message pointing to the saved CSV;
 it does not duplicate the summary tables.
@@ -65,7 +65,8 @@ RL lesson03 --runs 1 --steps 20 --verbose
 RL lesson04 --algorithm both --verbose
 ```
 
-Verbose mode also displays the saved-file paths. It does not change the CSV, log,
+Saved-file paths are displayed in both modes, including the plot directory when
+plots are requested. Verbose mode does not change the CSV, log,
 plots, or experiment results. In lesson 01, `--quiet` still suppresses individual
 episode summaries and an explicit `--trace` still records transitions in `run.log`;
 `--verbose` also displays those requested transitions and the final summary table.

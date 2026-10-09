@@ -104,8 +104,8 @@ RL lesson01 --help
 Lesson commands work from any directory in the activated environment. Relative
 log and plot paths are resolved from the directory where you run the command.
 Plot files are generated only when requested by a lesson command.
-Successful runs save results to `summary.csv` and other output to `run.log` without
-printing to the terminal. Add `--verbose` to also see the output on screen, for example
+Successful runs save results to `summary.csv` and other output to `run.log`, then
+print the saved-file paths. Add `--verbose` to also see results and diagnostics on screen, for example
 `RL lesson01 --policy right --trace --verbose`. See [output conventions](docs/command-outputs.md).
 
 ## Shared vocabulary

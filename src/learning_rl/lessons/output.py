@@ -44,7 +44,16 @@ def save_summary(directory, fieldnames, rows):
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
-    print(f"Summary saved to {path}")
+    report_saved_path("Summary", path)
+
+
+def report_saved_path(label, path):
+    """Record a saved-file location and display it in every output mode."""
+    stream = sys.stdout
+    message = f"{label} saved to {path}"
+    print(message)
+    if isinstance(stream, _Tee) and not stream.verbose:
+        print(message, file=stream.terminal)
 
 
 @contextmanager
@@ -70,5 +79,4 @@ def lesson_output(lesson, directory=None, *, verbose=False):
     with (directory / "run.log").open("w", encoding="utf-8") as log:
         with redirect_stdout(_Tee(sys.stdout, log, verbose)):
             yield directory
-    if verbose:
-        print(f"Output saved to {directory / 'run.log'}", file=sys.stderr)
+    print(f"Output saved to {directory / 'run.log'}", file=sys.stderr)
