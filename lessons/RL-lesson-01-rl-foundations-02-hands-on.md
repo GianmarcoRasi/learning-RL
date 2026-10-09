@@ -23,9 +23,45 @@ to choose a directory; reusing it overwrites its log. See [output conventions](.
 
 Imagine a courier walking along five numbered stops. Position $0$ is the depot, positions $1,2,3$ are intermediate stops, and position $4$ is the destination.
 
+```text
+   Courier starts here
+           ↓
+       [0] ─── [1] ─── [2] ─── [3] ─── [4]
+      Depot    Intermediate stops     Destination
+                                        Terminal
+```
+
 The environment starts each episode in state $0$. At each decision step, the agent chooses one of two actions: left (coded as $0$) or right (coded as $1$). The next state is the neighboring position in that direction, except that choosing left in state $0$ keeps the agent in state $0$. This still counts as a transition.
 
 Every transition that does not enter state $4$ gives reward $-1$. Entering state $4$ gives reward $+10$ and terminates the episode. State $4$ is therefore the terminal state; no further actions or rewards follow.
+
+```mermaid
+flowchart
+    S0["0 · Start / depot"]
+    S1["1"]
+    S2["2"]
+    S3["3"]
+    S4(["4 · Goal / terminal"])
+
+    S0 -->|"Left (0): −1"| S0
+    S0 -->|"Right (1): −1"| S1
+    S1 -->|"Left (0): −1"| S0
+    S1 -->|"Right (1): −1"| S2
+    S2 -->|"Left (0): −1"| S1
+    S2 -->|"Right (1): −1"| S3
+    S3 -->|"Left (0): −1"| S2
+    S3 -->|"Right (1): +10"| S4
+
+    classDef intermediate fill:#1e293b,stroke:#94a3b8,color:#f1f5f9
+    classDef start fill:#172554,stroke:#60a5fa,color:#eff6ff
+    classDef terminal fill:#052e16,stroke:#4ade80,color:#f0fdf4
+    class S1,S2,S3 intermediate
+    class S0 start
+    class S4 terminal
+    linkStyle default stroke:#94a3b8,color:#f1f5f9
+```
+
+Each numbered position is a state. Left at state $0$ leaves the agent there and still earns $-1$. Reaching state $4$ ends the episode; it has no outgoing actions. Arrow labels show the action name, its code, and the reward for that transition.
 
 Going straight right gives rewards $-1,-1,-1,10$. The final move gives $10$ total, rather than $10-1$. This small world lets us inspect every decision without the extra details of a real delivery problem.
 
