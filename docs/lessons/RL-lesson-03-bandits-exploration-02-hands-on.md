@@ -4,96 +4,55 @@
 > **Study pace:** Allow 45–75 minutes for the coding lab and practical exercises.  
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 
-These are the original lesson’s command-line labs and practical exercises. The programs use Python 3.10+ and only the standard library. Run commands from the directory containing your saved script; on systems without `python`, use `python3`.
+## Setup and commands
 
-## 7. Complete command-line lab
+Use Python 3.10+ and run every command in this tutorial from the **repository root**. Follow the [environment setup in the README](../../README.md), then install the course in editable mode:
 
-Save the following as `lesson03.py`. It requires Python 3.10+ and no external packages. Each arm returns a Gaussian reward with the supplied mean and standard deviation $1$. The agent sees rewards; only the simulator's metrics use the hidden means. Ties are broken randomly so arm zero gets no special privilege.
-
-The `--initial` value influences early selection. Under sample averages, the first observation replaces that arm's initial estimate completely. Optimistic initialization encourages early exploration here, but does not guarantee finding the best arm.
-
-```python
-import argparse
-import random
-import statistics
-
-
-def experiment(means, steps, epsilon, initial, seed, run):
-    # Separate streams: reward noise is independent of action-selection draws.
-    actions_rng = random.Random(seed + 2 * run)
-    rewards_rng = random.Random(seed + 2 * run + 1)
-    estimates = [initial] * len(means)
-    counts = [0] * len(means)
-    reward_sum = regret = 0.0
-    optimal_count = 0
-    best = max(means)
-    for _ in range(steps):
-        if actions_rng.random() < epsilon:
-            action = actions_rng.randrange(len(means))
-        else:
-            highest = max(estimates)
-            ties = [a for a, q in enumerate(estimates) if q == highest]
-            action = actions_rng.choice(ties)
-        reward = rewards_rng.gauss(means[action], 1.0)
-        counts[action] += 1
-        estimates[action] += (reward - estimates[action]) / counts[action]
-        reward_sum += reward
-        regret += best - means[action]
-        optimal_count += int(means[action] == best)
-    return reward_sum / steps, regret, optimal_count / steps, estimates, counts
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Compare epsilon-greedy Gaussian bandits.")
-    parser.add_argument("--means", type=float, nargs="+", default=[0.0, 0.2, 1.0])
-    parser.add_argument("--epsilons", type=float, nargs="+", default=[0.0, 0.1, 1.0])
-    parser.add_argument("--steps", type=int, default=2000)
-    parser.add_argument("--runs", type=int, default=200)
-    parser.add_argument("--initial", type=float, default=0.0)
-    parser.add_argument("--seed", type=int, default=7)
-    args = parser.parse_args()
-    import math
-    if args.steps < 1 or args.runs < 1:
-        parser.error("steps and runs must be positive")
-    if not all(math.isfinite(m) for m in args.means) or not math.isfinite(args.initial):
-        parser.error("means and initial must be finite")
-    if not all(0 <= e <= 1 for e in args.epsilons):
-        parser.error("epsilons must be in [0, 1]")
-    for epsilon in args.epsilons:
-        results = [experiment(args.means, args.steps, epsilon, args.initial, args.seed, run)
-                   for run in range(args.runs)]
-        rewards = [r[0] for r in results]
-        se = statistics.stdev(rewards) / args.runs ** 0.5 if args.runs > 1 else 0.0
-        print(f"epsilon={epsilon:g} mean_reward={statistics.mean(rewards):.4f} "
-              f"reward_SE={se:.4f} "
-              f"mean_pseudo_regret={statistics.mean(r[1] for r in results):.2f} "
-              f"optimal_fraction={statistics.mean(r[2] for r in results):.3f}")
-        if args.runs == 1:
-            print("estimates=", [round(q, 4) for q in results[0][3]])
-            print("counts=", results[0][4])
-
-
-if __name__ == "__main__":
-    main()
+```bash
+python -m pip install -e .
 ```
+
+For Lesson 1 plots, use `python -m pip install -e ".[plots]"`. Text runs require no runtime dependencies beyond the standard library. Editable installation lets commands use your source changes without reinstalling; no copying baseline programs out of Markdown is needed.
+
+The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
+
+## 1. Guided tutorial — Run the lab
+
+### Find the implementation
+
+The [Lesson 3 source](../../src/learning_rl/lessons/lesson03.py) contains `experiment()` for one bandit run and `main()` for comparisons across epsilon settings and repeated runs. Each arm returns a Gaussian reward with its supplied mean and standard deviation one. The agent sees rewards; simulator metrics use hidden means. Random tie breaking avoids favoring arm zero.
+
+The `--initial` estimate affects early action selection. With sample averages, an arm's first reward replaces its initial estimate. Optimism encourages early exploration but cannot guarantee finding the best arm.
 
 The lab reuses seed schedules across strategies. This can correlate their results, so separate standard errors alone are not a test of the difference between strategies. Assess strategy differences with that paired structure in mind.
 
 ### Terminal commands
 
 ```bash
-python lesson03.py --help
-python lesson03.py --epsilons 0 0.1 1 --steps 2000 --runs 200 --seed 7
-python lesson03.py --epsilons 0.1 --runs 1 --steps 100 --seed 7
-python lesson03.py --epsilons 0 --initial 5 --runs 200
-python lesson03.py --means 0 0.9 1 --epsilons 0 0.01 0.1 --steps 5000
+python -m learning_rl.lessons.lesson03 --help
+python -m learning_rl.lessons.lesson03 --epsilons 0 0.1 1 --steps 2000 --runs 200 --seed 7
+python -m learning_rl.lessons.lesson03 --epsilons 0.1 --runs 1 --steps 100 --seed 7
+python -m learning_rl.lessons.lesson03 --epsilons 0 --initial 5 --runs 200
+python -m learning_rl.lessons.lesson03 --means 0 0.9 1 --epsilons 0 0.01 0.1 --steps 5000
 ```
 
 Interpret each summary row using all three main metrics. For uniform exploration, default means average to $0.4$; its expected per-pull pseudo-regret is $1-0.4=0.6$. Over 2,000 pulls, cumulative pseudo-regret should average near $1,200$, and optimal fraction near $1/3$ across enough runs. These are statistical checks, not exact outputs.
 
 Pure greedy runs can settle on the wrong arm. Epsilon-greedy often improves average performance over this horizon, but no specific finite noisy experiment guarantees that ranking. Repeating the same command and seed reproduces results within the same Python environment.
 
-## 8. Practical exercises
+### Guided comparisons
+
+First use `--runs 1 --steps 100` to inspect final arm estimates and selection counts. Then compare epsilon settings over many runs. Read mean reward, standard error, pseudo-regret and optimal fraction together. Increase the horizon while keeping means and seed fixed; finally narrow the gap between the best arms. Predict each effect before running it.
+
+| Option | Meaning |
+| --- | --- |
+| `--means` | Hidden mean reward of each arm |
+| `--epsilons` | Exploration probabilities to compare |
+| `--steps`, `--runs` | Pulls per run and repeated experiments |
+| `--initial` | Initial estimate for every arm |
+| `--seed` | Reproducible random stream schedule |
+
+## 2. Practical exercises
 
 1. **Horizon:** compare `--steps 20`, `200` and `2000`, holding other settings fixed. When does exploration start paying for itself? Report means over at least 100 runs.
 2. **Difficulty:** compare means `[0,0.2,1]` and `[0,0.9,1]`. Explain why identifying the best arm is harder when the gap is small, even if mistakes then cost less.
@@ -108,9 +67,9 @@ For the nonstationary exercise, explicitly document that regret now compares aga
 #### 1. Compare horizons
 
 ```bash
-python lesson03.py --steps 20 --runs 200 --epsilons 0 0.1 1 --seed 7
-python lesson03.py --steps 200 --runs 200 --epsilons 0 0.1 1 --seed 7
-python lesson03.py --steps 2000 --runs 200 --epsilons 0 0.1 1 --seed 7
+python -m learning_rl.lessons.lesson03 --steps 20 --runs 200 --epsilons 0 0.1 1 --seed 7
+python -m learning_rl.lessons.lesson03 --steps 200 --runs 200 --epsilons 0 0.1 1 --seed 7
+python -m learning_rl.lessons.lesson03 --steps 2000 --runs 200 --epsilons 0 0.1 1 --seed 7
 ```
 
 The original program gives the following reference results. Seeded random outputs can depend on the Python environment.
@@ -132,8 +91,8 @@ At 20 steps, epsilon $0.1$ has slightly lower measured mean reward than greedy; 
 #### 2. Reduce the gap
 
 ```bash
-python lesson03.py --means 0 0.2 1 --steps 2000 --runs 200 --epsilons 0 0.1 --seed 7
-python lesson03.py --means 0 0.9 1 --steps 2000 --runs 200 --epsilons 0 0.1 --seed 7
+python -m learning_rl.lessons.lesson03 --means 0 0.2 1 --steps 2000 --runs 200 --epsilons 0 0.1 --seed 7
+python -m learning_rl.lessons.lesson03 --means 0 0.9 1 --steps 2000 --runs 200 --epsilons 0 0.1 --seed 7
 ```
 
 The best-versus-second-best mean gap falls from $0.8$ to $0.1$, while reward noise still has standard deviation one. More observations are needed to distinguish nearly equal means. However, choosing arm one instead of arm two then costs only $0.1$ per pull instead of $0.8$. A lower optimal fraction can therefore coexist with a high mean reward and low regret. Report all three printed metrics; optimal fraction alone does not describe the cost of mistakes.
@@ -141,15 +100,15 @@ The best-versus-second-best mean gap falls from $0.8$ to $0.1$, while reward noi
 #### 3. Use optimistic initial values
 
 ```bash
-python lesson03.py --epsilons 0 --initial 0 --steps 2000 --runs 200 --seed 7
-python lesson03.py --epsilons 0 --initial 5 --steps 2000 --runs 200 --seed 7
+python -m learning_rl.lessons.lesson03 --epsilons 0 --initial 0 --steps 2000 --runs 200 --seed 7
+python -m learning_rl.lessons.lesson03 --epsilons 0 --initial 5 --steps 2000 --runs 200 --seed 7
 ```
 
 In a reference run, mean reward increases from approximately $0.7863$ to $0.8469$. Untried arms retain their optimistic value and can attract greedy choices after a tried arm receives a lower reward. On an arm’s first update, its count becomes one, so $Q\leftarrow Q+(R-Q)/1=R$: the initial value disappears completely for that arm. Optimism encourages early trials but does not guarantee correct identification, especially with noisy rewards.
 
 #### 4–5. Implement constant step sizes and a mean switch
 
-Apply both extensions below to the original `lesson03.py`. Replace `experiment()` with this version; the result tuple remains compatible with the original reporting code.
+Apply both extensions below to the source file `src/learning_rl/lessons/lesson03.py`. Replace `experiment()` with this version; the result tuple remains compatible with the original reporting code.
 
 ```python
 def experiment(means, steps, epsilon, initial, seed, run,
@@ -211,8 +170,8 @@ Inside the epsilon loop in `main()`, replace the `results = ...` assignment with
 For exercise 4, compare estimates on the stationary task:
 
 ```bash
-python lesson03.py --epsilons 0.1 --runs 1 --steps 2000 --seed 7
-python lesson03.py --epsilons 0.1 --runs 1 --steps 2000 --seed 7 --alpha 0.1
+python -m learning_rl.lessons.lesson03 --epsilons 0.1 --runs 1 --steps 2000 --seed 7
+python -m learning_rl.lessons.lesson03 --epsilons 0.1 --runs 1 --steps 2000 --seed 7 --alpha 0.1
 ```
 
 The update with a supplied step size is $Q\leftarrow Q+\alpha(R-Q)$. Sample averages give equal weight to past observations and become less noisy as an arm’s count grows. Constant step sizes keep responding to recent rewards and retain fluctuations even after many pulls. With $\alpha=0.1$, the initial estimate’s weight after $n$ arm observations is $0.9^n$, so it no longer disappears after the first observation. Since different estimates can lead to different actions, equal seeds do not imply identical trajectories across these strategies.
@@ -222,9 +181,9 @@ For the two stationary commands above, one reference run gives final sample-aver
 For exercise 5, set the switch halfway through the run:
 
 ```bash
-python lesson03.py --epsilons 0.1 --runs 200 --steps 4000 --switch-step 2000 --seed 7
-python lesson03.py --epsilons 0.1 --runs 200 --steps 4000 --switch-step 2000 --seed 7 --alpha 0.1
-python lesson03.py --epsilons 0.1 --runs 1 --steps 4000 --switch-step 2000 --seed 7 --alpha 0.1
+python -m learning_rl.lessons.lesson03 --epsilons 0.1 --runs 200 --steps 4000 --switch-step 2000 --seed 7
+python -m learning_rl.lessons.lesson03 --epsilons 0.1 --runs 200 --steps 4000 --switch-step 2000 --seed 7 --alpha 0.1
+python -m learning_rl.lessons.lesson03 --epsilons 0.1 --runs 1 --steps 4000 --switch-step 2000 --seed 7 --alpha 0.1
 ```
 
 Pulls are indexed from zero: pulls 0–1999 use the original means, and pull 2000 onward uses the swapped means. The default vector changes from `[0, 0.2, 1]` to `[1, 0.2, 0]`. Sample averages retain the earlier observations with substantial weight; constant step sizes can adapt faster when positive epsilon keeps supplying trials of the newly best arm. Compare mean reward, pseudo-regret and optimal fraction across runs, and inspect the final estimates with `--runs 1`. A finite experiment need not show a guaranteed ranking.

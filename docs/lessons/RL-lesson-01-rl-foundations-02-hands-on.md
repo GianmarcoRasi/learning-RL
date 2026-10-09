@@ -4,9 +4,19 @@
 > **Study pace:** Allow 45–75 minutes for the coding lab and practical exercises.  
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 
-These are the original lesson’s command-line labs and practical exercises. The programs use Python 3.10+ and only the standard library. Run commands from the directory containing your saved script; on systems without `python`, use `python3`.
+## Setup and commands
 
-## 1. Practical lab --- Build a tiny environment
+Use Python 3.10+ and run every command in this tutorial from the **repository root**. Follow the [environment setup in the README](../../README.md), then install the course in editable mode:
+
+```bash
+python -m pip install -e .
+```
+
+For Lesson 1 plots, use `python -m pip install -e ".[plots]"`. Text runs require no runtime dependencies beyond the standard library. Editable installation lets commands use your source changes without reinstalling; no copying baseline programs out of Markdown is needed.
+
+The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
+
+## 1. Guided tutorial — Explore LineWorld
 
 Imagine a courier walking along five numbered stops. Position $0$ is the depot, positions $1,2,3$ are intermediate stops, and position $4$ is the destination.
 
@@ -22,102 +32,24 @@ Going straight right gives rewards $-1,-1,-1,10$. The final move gives $10$ tota
 
 Before running the program, predict how many transitions it takes to finish and how a left move changes that number. The program implements specified policies; it does not learn a better one yet.
 
-### Complete command-line program
+### Find the implementation
 
-Save the following as `lesson01.py`. It uses only the Python 3.10+ standard library; no packages or notebook are required. Run commands from the directory containing your saved script. On systems without `python`, use `python3`.
+| File | Responsibility |
+| --- | --- |
+| [Lesson 1 runner](../../src/learning_rl/lessons/lesson01.py) | `Episode` records, `run_episode()`, summaries, and CLI arguments |
+| [LineWorld](../../src/learning_rl/environments/lineworld.py) | Environment reset, step, and deterministic transition model |
+| [Lesson 1 plots](../../src/learning_rl/plotting/lesson01.py) | Five plotting functions consuming recorded episodes |
 
-The environment reports true termination. The runner separately reports **truncation** when its safety limit is reached. A time limit is not evidence that the goal was reached. The reported discounted return stops at that limit; it does not estimate unobserved future rewards.
-
-```python
-import argparse
-import random
-
-
-class LineWorld:
-    def __init__(self, size=5, step_reward=-1.0, goal_reward=10.0):
-        if size < 2:
-            raise ValueError("size must be at least 2")
-        self.size = size
-        self.goal = size - 1
-        self.step_reward = step_reward
-        self.goal_reward = goal_reward
-        self.state = 0
-
-    def reset(self):
-        self.state = 0
-        return self.state
-
-    def step(self, action):
-        if self.state == self.goal:
-            raise RuntimeError("Episode terminated: call reset()")
-        if action not in (0, 1):
-            raise ValueError("Action must be 0 (left) or 1 (right)")
-        self.state = max(0, self.state - 1) if action == 0 else self.state + 1
-        terminated = self.state == self.goal
-        reward = self.goal_reward if terminated else self.step_reward
-        return self.state, reward, terminated
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Run a fixed or random LineWorld agent.")
-    parser.add_argument("--policy", choices=["right", "random"], default="right")
-    parser.add_argument("--size", type=int, default=5)
-    parser.add_argument("--episodes", type=int, default=1)
-    parser.add_argument("--max-steps", type=int, default=100)
-    parser.add_argument("--gamma", type=float, default=0.9)
-    parser.add_argument("--seed", type=int, default=7)
-    parser.add_argument("--step-reward", type=float, default=-1.0)
-    parser.add_argument("--goal-reward", type=float, default=10.0)
-    parser.add_argument("--trace", action="store_true")
-    args = parser.parse_args()
-    if args.size < 2 or args.episodes < 1 or args.max_steps < 1:
-        parser.error("size >= 2, episodes >= 1, and max-steps >= 1 required")
-    if not 0 <= args.gamma <= 1:
-        parser.error("gamma must be in [0, 1]")
-    rng = random.Random(args.seed)
-    env = LineWorld(args.size, args.step_reward, args.goal_reward)
-    totals, returns, lengths = [], [], []
-    successes = 0
-    for episode in range(args.episodes):
-        state = env.reset()
-        total = discounted = 0.0
-        terminated = False
-        for t in range(args.max_steps):
-            action = 1 if args.policy == "right" else rng.randrange(2)
-            next_state, reward, terminated = env.step(action)
-            total += reward
-            discounted += args.gamma ** t * reward
-            if args.trace:
-                print(f"episode={episode + 1} state={state} action={action} "
-                      f"next_state={next_state} reward={reward:g}")
-            state = next_state
-            if terminated:
-                break
-        steps = t + 1
-        successes += int(terminated)
-        totals.append(total)
-        returns.append(discounted)
-        lengths.append(steps)
-        print(f"episode={episode + 1} steps={steps} reward_sum={total:.3f} "
-              f"return={discounted:.3f} terminated={terminated} "
-              f"truncated={not terminated}")
-    print(f"mean_reward_sum={sum(totals)/args.episodes:.3f} "
-          f"mean_return={sum(returns)/args.episodes:.3f} "
-          f"mean_steps={sum(lengths)/args.episodes:.3f} "
-          f"success_rate={successes/args.episodes:.3f}")
-
-
-if __name__ == "__main__":
-    main()
-```
+The runner records actions and outcomes before calculating summaries or generating plots. Recording and plotting do not change the random action sequence. The environment reports termination; the runner marks a cutoff as truncation. A cutoff stops the recorded return and does not estimate missing continuation.
 
 ### Run from your terminal
 
+First inspect the CLI, then run one traced episode and a batch comparison:
+
 ```bash
-python lesson01.py --help
-python lesson01.py --policy right --trace
-python lesson01.py --policy random --episodes 100 --max-steps 100 --seed 7
-python lesson01.py --policy random --episodes 100 --step-reward 0 --goal-reward 1
+python -m learning_rl.lessons.lesson01 --help
+python -m learning_rl.lessons.lesson01 --policy right --trace
+python -m learning_rl.lessons.lesson01 --compare --episodes 100 --seed 7 --quiet
 ```
 
 For the default always-right run, expect four steps, a reward sum of `7`, and discounted return `4.58` at $\gamma=0.9$:
@@ -126,86 +58,40 @@ $$
 G_0=-1-0.9-0.9^2+10(0.9^3)=4.58.
 $$
 
-The script reports every episode and a final summary. `--seed` reproduces random runs in the same Python environment. Nothing is learning yet: the policy is specified by the user.
+Every command ends with a summary table. `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. `--quiet` suppresses individual episode summaries; an explicitly requested `--trace` still prints transitions. `--compare` runs both right and random policies with the same environment settings and episode count, overriding `--policy`.
 
-## 2. Practical exercise — Random agent
+`--seed` reproduces random runs in the same Python environment. Recording and plotting consume no random draws. Nothing is learning: the policies are fixed.
 
-1. Run 100 random episodes, then 1,000. Compare mean return, length and success rate.
-2. Use `--max-steps 2` with the right policy. Why are all episodes truncated?
-3. Compare `--gamma 0`, `--gamma 0.5` and `--gamma 1`. Does the trajectory change?
-4. Compare step reward `-1`, goal reward `10` with step reward `0`, goal reward `1`.
-5. Add a `--right-prob` argument, using `rng.random()` to choose right with that probability. Preserve `--help`, validate the probability and show a run command.
+### Optional plotting
 
-### Solutions — Exercises 1–5
-
-Try each exercise before using these solutions. Commands below use the original program unless explicitly described as an extension.
-
-#### 1. Compare random runs
+Install Matplotlib in the Python environment you use for this lab:
 
 ```bash
-python lesson01.py --policy random --episodes 100 --seed 7
-python lesson01.py --policy random --episodes 1000 --seed 7
+python -m pip install -e ".[plots]"
+python -m learning_rl.lessons.lesson01 --compare --episodes 100 --seed 7 --quiet --plots outputs/lesson01/comparison
 ```
 
-Compare the final `mean_return`, `mean_steps` and `success_rate` lines. More episodes generally give a more stable estimate; they do not train this fixed random policy or guarantee a better mean. Without a cutoff, the expected number of moves from position zero is $4(4+1)=20$, and the expected undiscounted reward sum is $10-(20-1)=-9$. With the 100-step cutoff, lengths are capped and some runs may fail to finish, so the reported means need not equal these unlimited-run quantities.
+`--plots DIRECTORY` saves PNG files without opening windows. Open the saved images in an image viewer. Each command uses the same filenames within its output directory, so use distinct directories for experiments you want to keep. Without `--plots`, Matplotlib is neither imported nor required.
 
-#### 2. Explain truncation
+| Function | Saved file | What to inspect |
+| --- | --- | --- |
+| `plot_trajectory(episode, goal, label)` | `right-1-trajectory.png`, etc. | Position against decision step, including initial state $S_0$. A star marks termination; an X marks truncation. The dashed line is the goal. |
+| `plot_rewards(episode, gamma, label)` | `right-1-rewards.png`, etc. | Immediate rewards and cumulative discounted reward in separate panels. |
+| `plot_comparison(experiments, gamma)` | `comparison.png` | Box plots of recorded returns and lengths, and bars for success rates. The title includes truncation counts. |
+| `plot_discount(episode)` | `right-1-discount.png`, etc. | The same recorded trajectory scored at discounts from zero to one. |
+| `plot_running_mean(experiments, gamma)` | `running-mean.png` | Running estimates of each fixed policy's mean recorded return. This is not a learning curve. |
 
-```bash
-python lesson01.py --policy right --max-steps 2 --trace
-```
+By default, trajectory and reward plots are saved for the first three episodes per policy. `--plot-episodes 1` limits these to the first episode. The discount plot always uses the first episode; comparison and running-mean plots use every episode. An experiment is a dictionary mapping policy labels to lists of `Episode` records. Each record contains states, actions, rewards, and termination status. Plot functions return a Matplotlib figure, so they can also be called directly from Python; close the figure after saving it.
 
-The trajectory is $0\to1\to2$, with two rewards of $-1$. Reaching position four requires four moves. Expect `steps=2`, `reward_sum=-2.000`, `return=-1.900`, `terminated=False`, `truncated=True`, and a success rate of zero.
+The cumulative reward panel shows
 
-#### 3. Change the discount
+$$
+C_n=\sum_{t=0}^{n-1}\gamma^t R_{t+1},\qquad C_0=0.
+$$
 
-```bash
-python lesson01.py --policy right --gamma 0 --trace
-python lesson01.py --policy right --gamma 0.5 --trace
-python lesson01.py --policy right --gamma 1 --trace
-```
+Its final value equals the reported recorded return. Intermediate points accumulate rewards from the start; they are not future returns $G_t$. For a truncated episode, the final point excludes unobserved future rewards.
 
-The actions and states remain identical because this policy does not use the discount. For rewards $[-1,-1,-1,10]$, the returns are respectively $-1$, $-0.5$, and $7$. The reward sum remains $7$. With a random policy, keeping the same seed and other arguments also preserves the trajectory when only the discount changes.
-
-#### 4. Change reward design
-
-```bash
-python lesson01.py --policy right --gamma 1 --step-reward -1 --goal-reward 10
-python lesson01.py --policy right --gamma 1 --step-reward 0 --goal-reward 1
-python lesson01.py --policy random --episodes 1000 --seed 7 --gamma 1 --step-reward 0 --goal-reward 1
-```
-
-The right policy earns $7$ with movement costs and $1$ with sparse rewards. For a successful trajectory of length $T$, the respective undiscounted returns are $11-T$ and $1$. A truncated sparse-reward run earns zero, so its mean return at $\gamma=1$ equals its success rate. At $\gamma<1$, a successful sparse-reward trajectory has return $\gamma^{T-1}$. Changing rewards alone does not change this fixed policy’s actions.
-
-#### 5. Add a probability of moving right
-
-In `main()`, add this argument before `args = parser.parse_args()`:
-
-```python
-    parser.add_argument("--right-prob", type=float, default=0.5)
-```
-
-After parsing, add validation:
-
-```python
-    if not 0 <= args.right_prob <= 1:
-        parser.error("right-prob must be in [0, 1]")
-```
-
-Replace the existing action-selection line inside the step loop with:
-
-```python
-            action = 1 if args.policy == "right" else int(rng.random() < args.right_prob)
-```
-
-```bash
-python lesson01.py --help
-python lesson01.py --policy random --right-prob 0.8 --episodes 1000 --seed 7
-python lesson01.py --policy random --right-prob 1 --trace
-python lesson01.py --policy random --right-prob 0 --max-steps 5 --trace
-```
-
-Probability one reproduces the four-step right trajectory; probability zero stays at position zero and truncates. The probability affects only `--policy random`. Using `rng.random()` instead of `rng.randrange(2)` changes the seeded draw sequence, so the extended program need not reproduce the original random trajectories even at probability $0.5$.
+Compare policies under identical size, reward rule, discount and step limit. Box plots show variation across episodes; always-right produces a constant value. Lengths of truncated episodes equal the cutoff, so the length plot does not estimate how long those episodes would eventually take to finish.
 
 ### Interpretation
 
@@ -217,4 +103,102 @@ With sparse rewards and $\gamma=1$, all successful trajectories earn the same re
 
 ## Coding convention for this course
 
-Every coding lab provides a complete command-line entry point, `--help`, configurable experiment arguments, and example terminal commands. Coding exercises should retain this interface when you extend a program.
+Every coding lab provides a complete command-line entry point, `--help`, configurable experiment arguments, and example terminal commands. Coding exercises should retain this interface when you extend a program. Optional plots supplement traces and summary tables; text runs remain available without plotting dependencies.
+
+## 2. Practical exercises — Inspect and compare fixed policies
+
+For exercises 1–4, use the supplied program. Plots are optional: the summary tables and traces provide a text alternative.
+
+1. **Compare policies and estimate stability.** Run `--compare` with 100 and then 1,000 episodes. Compare mean return, length, success rate and truncation count. Inspect the comparison and running-mean plots if available. Does collecting more episodes train either policy? Explain why a more stable estimate need not be a better score.
+2. **Recognize truncation visually.** Run always-right with `--max-steps 2`. Inspect its trajectory and reward plots, or its trace and summary table. Identify the last state and ending status. Is the final cumulative reward the full task return?
+3. **Change the discount while preserving a trajectory.** Run always-right with discounts 0, 0.5 and 1. Compare the tables and reward plots; inspect its discount plot. Verify that states and actions do not change. Repeat with a random policy using the same seed and all other settings unchanged.
+4. **Compare reward rules.** Compare movement cost / goal reward `(-1, 10)` with sparse rewards `(0, 1)` at $\gamma=1$, using both policies and identical seeds. Use separate plot directories, or compare the tables. Which rule distinguishes fast and slow successful episodes? Then try $\gamma=0.9$ with sparse rewards. Do the fixed policies change their actions?
+5. **Extend the random policy.** Add `--right-prob`, choosing right with `rng.random() < args.right_prob`. Validate the probability, retain the plotting and summary interfaces, and include a run command. Compare probabilities 0, 0.5, 0.8 and 1 using tables or separate plot directories. Test the extension with `--compare` too.
+
+### Solutions — Exercises 1–5
+
+Try each exercise before reading its solution. To use plots, install Matplotlib and append the indicated `--plots` option; omit it for text-only runs.
+
+#### 1. Compare policies and estimate stability
+
+```bash
+python -m learning_rl.lessons.lesson01 --compare --episodes 100 --seed 7 --quiet --plots outputs/lesson01/100
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --plots outputs/lesson01/1000
+```
+
+Always-right takes four steps, earns total reward `7`, and has return `4.58` at the default discount, with success rate one. Random episodes have variable lengths and returns. More episodes generally give a more stable estimate; they do not train this fixed policy or guarantee a better mean. The running mean can still fluctuate.
+
+Without a cutoff, the expected number of moves from position zero for a uniform random policy is $4(4+1)=20$, and the expected **undiscounted** reward sum is $10-(20-1)=-9$. With the 100-step cutoff, lengths are capped and some runs may fail to finish. These unlimited-run quantities need not equal the reported means; also, discounted return and undiscounted reward sum differ.
+
+#### 2. Recognize truncation
+
+```bash
+python -m learning_rl.lessons.lesson01 --policy right --max-steps 2 --trace --plots outputs/lesson01/cutoff
+```
+
+The trajectory is $0\to1\to2$, with rewards $-1,-1$. Expect `steps=2`, `reward_sum=-2.000`, `return=-1.900`, `terminated=False`, `truncated=True`, and success rate zero. The trajectory ends with an X at position two, below the goal. The final cumulative reward is a partial sum, not an estimate of the unobserved continuation. Reaching position four requires four moves.
+
+#### 3. Change the discount
+
+```bash
+python -m learning_rl.lessons.lesson01 --policy right --gamma 0 --trace --plots outputs/lesson01/gamma0
+python -m learning_rl.lessons.lesson01 --policy right --gamma 0.5 --trace --plots outputs/lesson01/gamma05
+python -m learning_rl.lessons.lesson01 --policy right --gamma 1 --trace --plots outputs/lesson01/gamma1
+```
+
+Actions and states remain identical because this policy does not use the discount. For rewards $[-1,-1,-1,10]$, the returns are respectively $-1$, $-0.5$, and $7$. The reward sum remains $7$. The immediate reward panels match, but cumulative discounted reward changes. The discount plot rescales the same recorded rewards without resampling actions. With a random policy, keeping the same seed and all other arguments also preserves trajectories when only the discount changes.
+
+#### 4. Change reward design
+
+```bash
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward -1 --goal-reward 10 --plots outputs/lesson01/cost
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward 0 --goal-reward 1 --plots outputs/lesson01/sparse
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 0.9 --step-reward 0 --goal-reward 1 --plots outputs/lesson01/sparse-discounted
+```
+
+Always-right earns `7` with movement costs and `1` with sparse rewards at $\gamma=1$. For a successful trajectory of length $T$, the respective undiscounted returns are $11-T$ and $1$. The first rule favors shorter successful paths; the second gives all successes the same return. A truncated sparse-reward run earns zero, so its mean return at $\gamma=1$ equals its success rate. At $0<\gamma<1$, a successful sparse-reward trajectory has return $\gamma^{T-1}$, favoring earlier completion. Changing rewards or discount alone does not change either fixed policy's actions. Compare returns within each reward rule; their scales differ across rules.
+
+#### 5. Add a probability of moving right
+
+In `src/learning_rl/lessons/lesson01.py`, add this argument in `main()` before parsing:
+
+```python
+    parser.add_argument("--right-prob", type=float, default=0.5)
+```
+
+After parsing, validate it:
+
+```python
+    if not 0 <= args.right_prob <= 1:
+        parser.error("right-prob must be in [0, 1]")
+```
+
+Extend the runner signature:
+
+```python
+def run_episode(env, policy, rng, max_steps, right_prob=0.5):
+```
+
+Replace its action-selection line with:
+
+```python
+        action = 1 if policy == "right" else int(rng.random() < right_prob)
+```
+
+In `main()`, pass the argument into the runner:
+
+```python
+            episode = run_episode(env, policy, rng, args.max_steps, args.right_prob)
+```
+
+Run separate experiments (omit `--plots` for tables only):
+
+```bash
+python -m learning_rl.lessons.lesson01 --help
+python -m learning_rl.lessons.lesson01 --compare --right-prob 0 --episodes 1000 --quiet --plots outputs/lesson01/p0
+python -m learning_rl.lessons.lesson01 --compare --right-prob 0.5 --episodes 1000 --quiet --plots outputs/lesson01/p05
+python -m learning_rl.lessons.lesson01 --compare --right-prob 0.8 --episodes 1000 --quiet --plots outputs/lesson01/p08
+python -m learning_rl.lessons.lesson01 --compare --right-prob 1 --episodes 1000 --quiet --plots outputs/lesson01/p1
+```
+
+Probability one reproduces the four-step right trajectory; probability zero stays at position zero and truncates. Probability 0.8 should generally shorten episodes relative to 0.5. The probability affects only the random policy, including when invoked through `--compare`. Existing plot and table functions consume the same episode records and need no changes. Using `rng.random()` instead of `rng.randrange(2)` changes the seeded draw sequence, so the extension need not reproduce the original random trajectories even at probability 0.5.

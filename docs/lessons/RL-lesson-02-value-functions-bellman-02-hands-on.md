@@ -4,9 +4,19 @@
 > **Study pace:** Allow 45–75 minutes for the coding lab and practical exercises.  
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 
-These are the original lesson’s command-line labs and practical exercises. The programs use Python 3.10+ and only the standard library. Run commands from the directory containing your saved script; on systems without `python`, use `python3`.
+## Setup and commands
 
-## 8. Practical lab --- Estimate values from experience
+Use Python 3.10+ and run every command in this tutorial from the **repository root**. Follow the [environment setup in the README](../../README.md), then install the course in editable mode:
+
+```bash
+python -m pip install -e .
+```
+
+For Lesson 1 plots, use `python -m pip install -e ".[plots]"`. Text runs require no runtime dependencies beyond the standard library. Editable installation lets commands use your source changes without reinstalling; no copying baseline programs out of Markdown is needed.
+
+The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
+
+## 1. Practical lab --- Estimate values from experience
 
 We can calculate values from a known model, or estimate them by observing what happens. Think of estimating the value of a delivery strategy using either a complete route-and-traffic model or a log of completed trips.
 
@@ -37,121 +47,40 @@ If we stop every trip before delivery, collecting more such records will not res
 
 The lab uses **every-visit** MC: if an episode visits a state more than once, each visit provides a suffix return starting there. Those returns share parts of the same trip and are correlated. The advanced exercises explore both this dependence and truncation bias.
 
-### Complete command-line lab: sampling and model-based evaluation
+### Find the implementation
 
-Save the following as `lesson02.py`. It is self-contained and uses only Python 3.10+ standard-library modules. Its LineWorld matches Lesson 1: every transition that does not reach the goal earns `-1`, and entering the goal earns `+10`. Terminal value is zero: the `+10` belongs to the transition into the terminal, not to the terminal state itself.
+The [Lesson 2 source](../../src/learning_rl/lessons/lesson02.py) contains `evaluate()` for synchronous Bellman sweeps, `sample()` for every-visit Monte Carlo estimates, and `main()` for the command-line interface. The shared [LineWorld model](../../src/learning_rl/environments/lineworld.py) supplies transition outcomes. Ordinary transitions earn `-1`; entry to the goal earns `+10`. Terminal value is zero.
 
-The `mc` mode averages observed suffix returns from **every visit**. Visits within one episode are correlated; do not treat them as independent samples when estimating uncertainty. The `dp` mode computes values from the known model. Both use the same policy, specified by `--right-prob`.
-
-```python
-import argparse
-import random
-
-
-def transition(state, action, size):
-    next_state = max(0, state - 1) if action == 0 else min(size - 1, state + 1)
-    done = next_state == size - 1
-    return next_state, 10.0 if done else -1.0, done
-
-
-def evaluate(size, gamma, right_prob, theta, max_iterations):
-    values = [0.0] * size
-    for iteration in range(1, max_iterations + 1):
-        new = values.copy()
-        for state in range(size - 1):
-            new[state] = 0.0
-            for action, prob in [(0, 1 - right_prob), (1, right_prob)]:
-                nxt, reward, done = transition(state, action, size)
-                new[state] += prob * (reward + gamma * (0.0 if done else values[nxt]))
-        delta = max(abs(a - b) for a, b in zip(new, values))
-        values = new
-        if delta < theta:
-            return values, iteration
-    raise RuntimeError("Evaluation did not converge; increase --max-iterations")
-
-
-def sample(size, gamma, right_prob, episodes, max_steps, rng):
-    sums = [0.0] * size
-    counts = [0] * size
-    truncated = 0
-    for _ in range(episodes):
-        state = 0
-        trajectory = []
-        done = False
-        for _ in range(max_steps):
-            action = int(rng.random() < right_prob)
-            nxt, reward, done = transition(state, action, size)
-            trajectory.append((state, reward))
-            state = nxt
-            if done:
-                break
-        truncated += int(not done)
-        # Every-visit MC: each visit contributes its observed suffix return.
-        # A truncated suffix is deliberately assigned zero continuation here.
-        G = 0.0
-        for state, reward in reversed(trajectory):
-            G = reward + gamma * G
-            sums[state] += G
-            counts[state] += 1
-    values = [sums[s] / counts[s] if counts[s] else None for s in range(size)]
-    values[-1] = 0.0
-    return values, counts, truncated
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Estimate or compute LineWorld policy values.")
-    parser.add_argument("--method", choices=["mc", "dp", "compare"], default="compare")
-    parser.add_argument("--size", type=int, default=5)
-    parser.add_argument("--gamma", type=float, default=0.9)
-    parser.add_argument("--right-prob", type=float, default=0.5)
-    parser.add_argument("--episodes", type=int, default=10000)
-    parser.add_argument("--max-steps", type=int, default=1000)
-    parser.add_argument("--theta", type=float, default=1e-10)
-    parser.add_argument("--max-iterations", type=int, default=100000)
-    parser.add_argument("--seed", type=int, default=7)
-    args = parser.parse_args()
-    if args.size < 2 or min(args.episodes, args.max_steps, args.max_iterations) < 1:
-        parser.error("size >= 2 and positive count arguments required")
-    if not 0 <= args.gamma < 1 or not 0 <= args.right_prob <= 1 or not args.theta > 0:
-        parser.error("gamma in [0, 1), right-prob in [0, 1], theta > 0 required")
-    if args.method in ("dp", "compare"):
-        values, iterations = evaluate(args.size, args.gamma, args.right_prob,
-                                      args.theta, args.max_iterations)
-        print(f"DP iterations={iterations}")
-        for state, value in enumerate(values):
-            print(f"state={state} dp_value={value:.6f}")
-    if args.method in ("mc", "compare"):
-        estimates, counts, truncated = sample(args.size, args.gamma, args.right_prob,
-                                              args.episodes, args.max_steps,
-                                              random.Random(args.seed))
-        print(f"MC truncated_episodes={truncated}/{args.episodes}")
-        for state, estimate in enumerate(estimates):
-            label = "unvisited" if estimate is None else f"{estimate:.6f}"
-            print(f"state={state} mc_value={label} visits={counts[state]}")
-        if truncated:
-            print("WARNING: zero continuation at time limits biases full-episode MC estimates.")
-
-
-if __name__ == "__main__":
-    main()
-```
+The `mc` mode averages observed suffix returns from every visit. Within-episode returns are correlated. The `dp` mode evaluates the known model. Both use the policy specified by `--right-prob`.
 
 ### Run and compare
 
 ```bash
-python lesson02.py --help
-python lesson02.py --method compare --episodes 10000 --seed 7
-python lesson02.py --method dp --right-prob 1
-python lesson02.py --method compare --gamma 0.5 --episodes 10000
-python lesson02.py --method dp --gamma 0.99
-python lesson02.py --method mc --max-steps 2 --episodes 100
+python -m learning_rl.lessons.lesson02 --help
+python -m learning_rl.lessons.lesson02 --method compare --episodes 10000 --seed 7
+python -m learning_rl.lessons.lesson02 --method dp --right-prob 1
+python -m learning_rl.lessons.lesson02 --method compare --gamma 0.5 --episodes 10000
+python -m learning_rl.lessons.lesson02 --method dp --gamma 0.99
+python -m learning_rl.lessons.lesson02 --method mc --max-steps 2 --episodes 100
 ```
 
 With `--method dp --right-prob 1`, expect the values `[4.58, 6.2, 8.0, 10.0, 0.0]` at the default discount. With a random policy, MC estimates should approach the DP values as sufficient complete experience is collected; individual finite runs need not improve monotonically when you add episodes.
 
+### Guided comparisons
+
+Start with `--method dp --right-prob 1` and check the known value vector. Next run `--method compare`: match state numbers across the DP and MC rows and inspect visit counts and truncation. Finally lower `--max-steps` to two. Predict which states will be unvisited and why collecting more truncated episodes cannot restore omitted rewards.
+
+| Option | What to vary or inspect |
+| --- | --- |
+| `--method mc`, `dp`, `compare` | Sampled estimates, model values, or both |
+| `--right-prob` | The fixed policy being evaluated |
+| `--episodes`, `--seed` | Sample amount and reproducibility |
+| `--max-steps` | External episode cutoff |
+| `--gamma`, `--theta`, `--max-iterations` | Discount, convergence tolerance and sweep limit |
+
 **Time-limit caveat:** the MC code uses zero continuation at a truncated trajectory's end. This omits later rewards and can bias estimates of the full-episode value. It reports how often that happens. Simply discarding all truncated episodes can also bias estimates by selecting shorter trajectories. For this lab, use a generous limit and inspect the truncation count. Later, TD learning will give us a principled way to bootstrap across external limits. If time remaining is part of the task itself, it belongs in the state and you must evaluate that finite-horizon task instead.
 
-## 9. Practical lab — Iterative policy evaluation
+## 2. Practical lab — Iterative policy evaluation
 
 Rather than wait for trips, a known model lets us repeatedly revise a table of values. A **Bellman backup** calculates reward plus discounted next-state estimates and averages according to the fixed policy. A **sweep** performs one such update for every state.
 
@@ -186,7 +115,7 @@ $$
 
 The maximum norm $\|\cdot\|_\infty$ means the largest absolute entry. A residual $0.01$ gives an error bound $0.1$ at $\gamma=0.9$, but $1$ at $\gamma=0.99$. These are worst-case bounds, not exact errors. The stretch exercises derive them.
 
-### Theory and coding exercises
+## Exercises — Interpretation and coding
 
 1. Derive $V(3)$ under the random policy. Check that $V(3)=0.5[-1+\gamma V(2)]+0.5(10)$.
 2. Calculate all values for the always-right policy by hand; verify with the CLI.
@@ -196,6 +125,32 @@ The maximum norm $\|\cdot\|_\infty$ means the largest absolute entry. A residual
 6. Add a `--visit-mode first` option to MC, retaining the every-visit default. A first-visit update uses the return following the earliest visit to a state in each episode. Compute returns backward, then choose earliest visits in forward order; selecting the first state encountered backward selects the *last* visit instead. Include a terminal command demonstrating both modes.
 
 ------------------------------------------------------------------------
+
+### Additional challenge — Improve the policy
+
+Return to the five-state LineWorld.
+
+You now have estimated $Q(s,a)$ values---or can reason about them.
+
+Construct a new policy:
+
+$$
+\pi'(s)\in\arg\max_a Q(s,a).
+$$
+
+Then compare the new policy with the random policy.
+
+Measure:
+
+-   average episode return;
+-   average episode length;
+-   success rate.
+
+### Think carefully
+
+If the estimates of $Q$ are imperfect, is it always safe to stop exploring and choose the largest estimate forever?
+
+This question leads directly toward bandits, exploration strategies, Monte Carlo control, temporal-difference learning, and eventually Q-learning.
 
 ### Solutions — Exercises 1–6
 
@@ -208,7 +163,7 @@ Left earns $-1$ and reaches state two; right earns $10$ and terminates. Each has
 Starting from terminal value zero, work backward: $V(3)=10$, $V(2)=-1+0.9(10)=8$, $V(1)=-1+0.9(8)=6.2$, and $V(0)=-1+0.9(6.2)=4.58$.
 
 ```bash
-python lesson02.py --method dp --right-prob 1
+python -m learning_rl.lessons.lesson02 --method dp --right-prob 1
 ```
 
 The printed vector is `[4.58, 6.2, 8.0, 10.0, 0.0]` up to formatting.
@@ -216,9 +171,9 @@ The printed vector is `[4.58, 6.2, 8.0, 10.0, 0.0]` up to formatting.
 #### 3. Compare Monte Carlo estimates
 
 ```bash
-python lesson02.py --method compare --episodes 100 --seed 7
-python lesson02.py --method compare --episodes 1000 --seed 7
-python lesson02.py --method compare --episodes 10000 --seed 7
+python -m learning_rl.lessons.lesson02 --method compare --episodes 100 --seed 7
+python -m learning_rl.lessons.lesson02 --method compare --episodes 1000 --seed 7
+python -m learning_rl.lessons.lesson02 --method compare --episodes 10000 --seed 7
 ```
 
 One reference run of the original program gives these values, rounded to four decimals; terminal value is zero throughout.
@@ -235,9 +190,9 @@ State three varies most across these three runs. It has fewer visits than earlie
 #### 4. Compare evaluation sweeps
 
 ```bash
-python lesson02.py --method dp --gamma 0.5
-python lesson02.py --method dp --gamma 0.9
-python lesson02.py --method dp --gamma 0.99
+python -m learning_rl.lessons.lesson02 --method dp --gamma 0.5
+python -m learning_rl.lessons.lesson02 --method dp --gamma 0.9
+python -m learning_rl.lessons.lesson02 --method dp --gamma 0.99
 ```
 
 With the original defaults, the respective sweep counts are 31, 134, and 308. A discount closer to one weakens the contraction guarantee; here the evaluation takes more sweeps. Keep the policy, initialization and tolerance fixed when comparing.
@@ -245,14 +200,14 @@ With the original defaults, the respective sweep counts are 31, 134, and 308. A 
 #### 5. Evaluate a policy that never finishes
 
 ```bash
-python lesson02.py --method compare --right-prob 0 --max-steps 3 --episodes 100
+python -m learning_rl.lessons.lesson02 --method compare --right-prob 0 --max-steps 3 --episodes 100
 ```
 
 Every sampled run stays at state zero and truncates. DP computes $V(s)=-1/(1-0.9)=-10$ for every nonterminal state. The three-reward first suffix has return $-2.71$. Every-visit MC averages all three suffixes, $[-2.71,-1.9,-1]$, so the reported state-zero estimate is $-1.87$. Other nonterminal states are `unvisited`. More repetitions of this same cutoff do not recover the infinite-horizon value.
 
 #### 6. Implement first-visit Monte Carlo
 
-Replace the original `sample()` function with the following. It keeps every-visit as the default, computes every suffix backward, and selects the earliest visit by scanning forward.
+Replace the `sample()` function in `src/learning_rl/lessons/lesson02.py` with the following. It keeps every-visit as the default, computes every suffix backward, and selects the earliest visit by scanning forward.
 
 ```python
 def sample(size, gamma, right_prob, episodes, max_steps, rng, visit_mode="every"):
@@ -301,49 +256,23 @@ Replace the `sample()` call in `main()` with:
 ```
 
 ```bash
-python lesson02.py --method mc --visit-mode every --episodes 10000 --seed 7
-python lesson02.py --method mc --visit-mode first --episodes 10000 --seed 7
-python lesson02.py --method mc --visit-mode first --right-prob 0 --max-steps 3 --episodes 1
+python -m learning_rl.lessons.lesson02 --method mc --visit-mode every --episodes 10000 --seed 7
+python -m learning_rl.lessons.lesson02 --method mc --visit-mode first --episodes 10000 --seed 7
+python -m learning_rl.lessons.lesson02 --method mc --visit-mode first --right-prob 0 --max-steps 3 --episodes 1
 ```
 
 In the final command, state zero has one counted visit and value $-2.71$; the every-visit counterpart has three counted visits and value $-1.87$. This check distinguishes the earliest visit from the last visit, whose return would be $-1$. Both modes retain zero continuation at truncation.
-
-## 11. Challenge --- Improve the policy
-
-Return to the five-state LineWorld.
-
-You now have estimated $Q(s,a)$ values---or can reason about them.
-
-Construct a new policy:
-
-$$
-\pi'(s)\in\arg\max_a Q(s,a).
-$$
-
-Then compare the new policy with the random policy.
-
-Measure:
-
--   average episode return;
--   average episode length;
--   success rate.
-
-### Think carefully
-
-If the estimates of $Q$ are imperfect, is it always safe to stop exploring and choose the largest estimate forever?
-
-This question leads directly toward bandits, exploration strategies, Monte Carlo control, temporal-difference learning, and eventually Q-learning.
 
 ### Solution — Improve and measure the policy
 
 Use the known model to compute $Q^\pi(s,a)=r+\gamma V^\pi(s')$ from the random policy’s DP values. At states zero through three, the respective `(left, right)` values are approximately `(-5.0522, -3.9527)`, `(-5.0522, -1.5094)`, `(-3.9527, 2.8208)`, and `(-1.5094, 10)`. Greediness therefore selects right everywhere.
 
-Save the following as `lesson02_compare.py` beside `lesson02.py`. It imports the original lesson’s functions, computes the improved policy, and measures both policies with the same episode and cutoff settings.
+Save the following as `scratch/lesson02_compare.py` in the repository root. It imports the original lesson’s functions, computes the improved policy, and measures both policies with the same episode and cutoff settings.
 
 ```python
 import argparse
 import random
-from lesson02 import evaluate, transition
+from learning_rl.lessons.lesson02 import evaluate, transition
 
 
 def measure(policy, episodes, max_steps, gamma, seed):
@@ -392,8 +321,8 @@ if __name__ == "__main__":
 ```
 
 ```bash
-python lesson02_compare.py --help
-python lesson02_compare.py --episodes 10000 --seed 7
+python scratch/lesson02_compare.py --help
+python scratch/lesson02_compare.py --episodes 10000 --seed 7
 ```
 
 At the default discount, the improved policy has return $4.58$, length four and success rate one on every run. The random policy’s mean return approaches $-4.50247$ and its unlimited-run mean length is 20. Imperfect estimates can reverse action rankings; choosing their maximum forever can prevent collecting the evidence needed to correct that mistake. This solution uses a known model rather than claiming that noisy estimates always identify the correct improvement.

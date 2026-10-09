@@ -4,9 +4,19 @@
 > **Study pace:** Allow 45–75 minutes for the coding lab and practical exercises.  
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 
-These are the original lesson’s command-line labs and practical exercises. The programs use Python 3.10+ and only the standard library. Run commands from the directory containing your saved script; on systems without `python`, use `python3`.
+## Setup and commands
 
-## 2. The environment and assumptions
+Use Python 3.10+ and run every command in this tutorial from the **repository root**. Follow the [environment setup in the README](../../README.md), then install the course in editable mode:
+
+```bash
+python -m pip install -e .
+```
+
+For Lesson 1 plots, use `python -m pip install -e ".[plots]"`. Text runs require no runtime dependencies beyond the standard library. Editable installation lets commands use your source changes without reinstalling; no copying baseline programs out of Markdown is needed.
+
+The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
+
+## 1. The environment and assumptions
 
 We return to the five-stop courier route, called LineWorld, with the same rules as Lessons 1–2:
 
@@ -27,111 +37,22 @@ The general theory here assumes **finitely many states and actions, bounded rewa
 
 A known model supplies $p(s',r\mid s,a)$: the probability of each next-state-and-reward outcome after an action. The courier lab is deterministic, with one outcome of probability one per state-action pair. With random delays or slips, we would average the possible outcomes. Knowing a model means we can calculate consequences of an action even if the agent has never physically tried it.
 
-## 7. Complete command-line lab
+## 2. Guided tutorial — Run the lab
 
-Our implementation begins with a uniform random policy, uses numerical evaluation sweeps, and picks left on exact ties. It approximates exact policy iteration because evaluation stops at a tolerance.
+### Find the implementation
 
-Save the following as `lesson04.py`. It uses Python 3.10+ and only the standard library. It is self-contained: no earlier script needs to be imported. The CLI lets you select either algorithm or compare both, change the line length and discount, and adjust the stopping tolerance.
+The [Lesson 4 source](../../src/learning_rl/lessons/lesson04.py) contains `action_value()`, `evaluate()`, `policy_iteration()`, and `value_iteration()`. It imports the shared [LineWorld model](../../src/learning_rl/environments/lineworld.py). Policy iteration starts with a uniform random policy; both algorithms choose left on exact action-value ties. Numerical evaluation stops at a tolerance.
 
-The code counts policy evaluation sweeps separately from policy improvement rounds. Do not compare policy rounds directly with value-iteration sweeps as if they measured equal work.
-
-```python
-import argparse
-
-
-def action_value(state, action, values, size, gamma):
-    nxt = max(0, state - 1) if action == 0 else min(size - 1, state + 1)
-    done = nxt == size - 1
-    reward = 10.0 if done else -1.0
-    return reward + gamma * (0.0 if done else values[nxt])
-
-
-def greedy(state, values, size, gamma):
-    left = action_value(state, 0, values, size, gamma)
-    right = action_value(state, 1, values, size, gamma)
-    return int(right > left)  # Stable tie rule: choose left on exact equality.
-
-
-def evaluate(policy, size, gamma, theta, max_iterations):
-    values = [0.0] * size
-    for iteration in range(1, max_iterations + 1):
-        new = values.copy()
-        for state in range(size - 1):
-            p_right = policy[state]
-            new[state] = ((1 - p_right) * action_value(state, 0, values, size, gamma)
-                          + p_right * action_value(state, 1, values, size, gamma))
-        delta = max(abs(x - y) for x, y in zip(new, values))
-        values = new
-        if delta < theta:
-            return values, iteration
-    raise RuntimeError("Policy evaluation did not converge")
-
-
-def policy_iteration(size, gamma, theta, max_iterations):
-    policy = [0.5] * (size - 1)
-    sweeps = 0
-    for round_number in range(1, max_iterations + 1):
-        values, count = evaluate(policy, size, gamma, theta, max_iterations)
-        sweeps += count
-        improved = [float(greedy(s, values, size, gamma)) for s in range(size - 1)]
-        if improved == policy:
-            return values, improved, round_number, sweeps
-        policy = improved
-    raise RuntimeError("Policy iteration did not stabilize")
-
-
-def value_iteration(size, gamma, theta, max_iterations):
-    values = [0.0] * size
-    for iteration in range(1, max_iterations + 1):
-        new = values.copy()
-        for state in range(size - 1):
-            new[state] = max(action_value(state, a, values, size, gamma) for a in (0, 1))
-        delta = max(abs(x - y) for x, y in zip(new, values))
-        values = new
-        if delta < theta:
-            policy = [float(greedy(s, values, size, gamma)) for s in range(size - 1)]
-            return values, policy, iteration, iteration
-    raise RuntimeError("Value iteration did not converge")
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Find optimal LineWorld policies with DP.")
-    parser.add_argument("--algorithm", choices=["policy", "value", "both"], default="both")
-    parser.add_argument("--size", type=int, default=5)
-    parser.add_argument("--gamma", type=float, default=0.9)
-    parser.add_argument("--theta", type=float, default=1e-10)
-    parser.add_argument("--max-iterations", type=int, default=100000)
-    args = parser.parse_args()
-    if args.size < 2 or args.max_iterations < 1:
-        parser.error("size >= 2 and max-iterations >= 1 required")
-    if not 0 <= args.gamma < 1 or not args.theta > 0:
-        parser.error("gamma in [0, 1) and theta > 0 required")
-    for name, algorithm in [("policy", policy_iteration), ("value", value_iteration)]:
-        if args.algorithm not in (name, "both"):
-            continue
-        values, policy, rounds, sweeps = algorithm(args.size, args.gamma, args.theta,
-                                                  args.max_iterations)
-        residual = max(abs(values[s] - max(action_value(s, a, values, args.size,
-                                                        args.gamma) for a in (0, 1)))
-                       for s in range(args.size - 1))
-        print(f"algorithm={name} rounds={rounds} sweeps={sweeps} residual={residual:.3g}")
-        for state, value in enumerate(values):
-            action = "terminal" if state == args.size - 1 else ("right" if policy[state] else "left")
-            print(f"state={state} value={value:.6f} action={action}")
-
-
-if __name__ == "__main__":
-    main()
-```
+The CLI compares algorithms and varies route length, discount and tolerance. It counts policy evaluation sweeps separately from policy improvement rounds: these are different units of work.
 
 ### Terminal commands
 
 ```bash
-python lesson04.py --help
-python lesson04.py --algorithm both
-python lesson04.py --algorithm policy --gamma 0.5
-python lesson04.py --algorithm value --size 20 --gamma 0.99
-python lesson04.py --algorithm both --theta 0.000001
+python -m learning_rl.lessons.lesson04 --help
+python -m learning_rl.lessons.lesson04 --algorithm both
+python -m learning_rl.lessons.lesson04 --algorithm policy --gamma 0.5
+python -m learning_rl.lessons.lesson04 --algorithm value --size 20 --gamma 0.99
+python -m learning_rl.lessons.lesson04 --algorithm both --theta 0.000001
 ```
 
 For the default run, both algorithms should report approximately:
@@ -151,6 +72,18 @@ V(s)=-\sum_{j=0}^{d-2}\gamma^j+10\gamma^{d-1}.
 $$
 
 For $d=1$, the sum is empty and equals zero. At the default discount this gives the table above. Right is uniquely optimal here. At $\gamma=0$, actions away from the goal can tie because only their identical immediate rewards matter; the tie rule can then select left. A discounted-optimal policy at $\gamma=0$ need not reach the goal.
+
+### Guided comparisons
+
+Run `--algorithm both` and compare values and actions state by state. Read policy rounds and evaluation sweeps separately. Then increase `--size` to eight and calculate the expected values before running. Change `--gamma` while holding size and tolerance fixed, and inspect the final residual as well as computation counts.
+
+| Option | Meaning |
+| --- | --- |
+| `--algorithm policy`, `value`, `both` | Which planning algorithm to run |
+| `--size` | Number of LineWorld positions |
+| `--gamma` | Discount in $[0,1)$ |
+| `--theta` | Positive stopping tolerance |
+| `--max-iterations` | Limit on evaluation or improvement iterations |
 
 ### Reading the distance formula as a delivery bill
 
@@ -178,7 +111,7 @@ $$
 
 A small residual supports accuracy of the values; it is not, by itself, a claim of exact floating-point equality. For example, $b=10^{-6}$ and $\gamma=0.99$ give a maximum value-error bound of $10^{-4}$. This bound concerns values, not an exact guarantee that every selected action matches a particular optimal policy when actions nearly tie.
 
-## 8. Practical exercises
+## 3. Practical exercises
 
 1. **Propagation:** add `--trace` to value iteration to print the value vector after each sweep. Predict when the goal reward first affects state zero, then verify by command line.
 2. **Analytical check:** use `--size 8 --gamma 0.9`, calculate the always-right values with the formula above, and compare both algorithms.
@@ -188,14 +121,22 @@ A small residual supports accuracy of the values; it is not, by itself, a claim 
 
 For the stochastic exercise, test the expected one-step value at state $3$ with zero initial values: intending right gives $(1-p)10+p(-1)$. A transition into the goal earns the goal reward even if it occurs because of a slip.
 
+### Additional challenge — Design a small control problem
+
+Design a tiny MDP in which an immediate attractive reward leads to a worse long-term result. Keep at most four states and two actions per nonterminal state.
+
+Specify all transition probabilities, rewards, terminal conditions and discount. Calculate $Q^\pi$ for an initial policy, improve it once by hand, and calculate the new value. Then adapt the CLI program to your model. Your submission should include a state/action table and a terminal command reproducing your result.
+
+One possible starting point: from a start state, `cash_out` terminates with $+3$ while `continue` earns $-1$ and reaches a state where `finish` terminates with $+10$. At $\gamma=0.9$, continuing returns $-1+0.9(10)=8$, exceeding $3$.
+
 ### Solutions — Exercises 1–5
 
 #### 1. Trace value propagation
 
-Use the extended program under exercises 4–5 below; it also implements `--trace`. Save it as `lesson04_solutions.py`.
+Use the extended program under exercises 4–5 below; it also implements `--trace`. Save it as `scratch/lesson04_solutions.py`.
 
 ```bash
-python lesson04_solutions.py --algorithm value --trace
+python scratch/lesson04_solutions.py --algorithm value --trace
 ```
 
 Starting from zeros, the first four synchronous value vectors are `[-1, -1, -1, 10, 0]`, `[-1.9, -1.9, 8, 10, 0]`, `[-2.71, 6.2, 8, 10, 0]`, and `[4.58, 6.2, 8, 10, 0]`. The goal reward first influences state zero on sweep four. Sweep five repeats the fixed point and recognizes convergence with the change-based stopping rule. Updating in place would change this propagation pattern.
@@ -203,7 +144,7 @@ Starting from zeros, the first four synchronous value vectors are `[-1, -1, -1, 
 #### 2. Check the eight-state route
 
 ```bash
-python lesson04.py --size 8 --gamma 0.9 --algorithm both
+python -m learning_rl.lessons.lesson04 --size 8 --gamma 0.9 --algorithm both
 ```
 
 Working backward from terminal value zero gives `[0.62882, 1.8098, 3.122, 4.58, 6.2, 8, 10, 0]`. Both algorithms should return these values within the tolerance and choose right at every nonterminal state. Each preceding value is $-1+0.9$ times the next value, except the goal-entry transition, which gives $10$ with zero continuation.
@@ -211,9 +152,9 @@ Working backward from terminal value zero gives `[0.62882, 1.8098, 3.122, 4.58, 
 #### 3. Compare work and residuals
 
 ```bash
-python lesson04.py --algorithm both --gamma 0.5
-python lesson04.py --algorithm both --gamma 0.9
-python lesson04.py --algorithm both --gamma 0.99
+python -m learning_rl.lessons.lesson04 --algorithm both --gamma 0.5
+python -m learning_rl.lessons.lesson04 --algorithm both --gamma 0.9
+python -m learning_rl.lessons.lesson04 --algorithm both --gamma 0.99
 ```
 
 With the original five-state model, random initial policy, zero initial evaluation values and tolerance $10^{-10}$, the reference results are:
@@ -228,7 +169,7 @@ Policy evaluation takes more sweeps here as the discount increases. Value iterat
 
 #### 4–5. Implement alternative starts and stochastic transitions
 
-This complete extension combines `--trace`, `--initial-policy`, and `--slip-prob`. Save it as `lesson04_solutions.py`; the original lab program can remain as a baseline. `random` means the uniform stochastic policy with right probability $0.5$, matching the original initialization. Every backup, greedy decision and residual uses the same slipped model.
+This complete extension combines `--trace`, `--initial-policy`, and `--slip-prob`. Save it as `scratch/lesson04_solutions.py`; the original lab program can remain as a baseline. `random` means the uniform stochastic policy with right probability $0.5$, matching the original initialization. Every backup, greedy decision and residual uses the same slipped model.
 
 ```python
 import argparse
@@ -334,9 +275,9 @@ if __name__ == "__main__":
 For exercise 4:
 
 ```bash
-python lesson04_solutions.py --help
-python lesson04_solutions.py --algorithm policy --initial-policy left
-python lesson04_solutions.py --algorithm policy --initial-policy random
+python scratch/lesson04_solutions.py --help
+python scratch/lesson04_solutions.py --algorithm policy --initial-policy left
+python scratch/lesson04_solutions.py --algorithm policy --initial-policy random
 ```
 
 Both starts yield `[4.58, 6.2, 8, 10, 0]` and an all-right policy at the default discount. With no slip, the initial left policy has value $-10$ everywhere nonterminal. At state three, the known model reveals that right earns $10$ immediately, so improvement changes that decision even though the initial policy never visits the goal. Subsequent rounds propagate improvement to earlier states. Finite evaluation error can affect decisions whose action values are almost tied; compare final values and residuals rather than requiring identical round counts for the two starts.
@@ -344,21 +285,13 @@ Both starts yield `[4.58, 6.2, 8, 10, 0]` and an all-right policy at the default
 For exercise 5:
 
 ```bash
-python lesson04_solutions.py --algorithm both --slip-prob 0
-python lesson04_solutions.py --algorithm both --slip-prob 0.2
+python scratch/lesson04_solutions.py --algorithm both --slip-prob 0
+python scratch/lesson04_solutions.py --algorithm both --slip-prob 0.2
 ```
 
 With zero slip, the original results are recovered. With slip $0.2$, both algorithms should agree within numerical tolerance; the value vector is lower because unintended left moves delay delivery. From state three with zero continuation values, intended right has value $0.8(10)+0.2(-1)=7.8$, and intended left has value $0.8(-1)+0.2(10)=1.2$. At slip $0.5$, both intended directions have the same outcome distribution and the stable tie rule selects left. At slip one, intending left executes right with certainty. Reward depends on the actual transition, so a slipped move into the goal still earns $10$.
 
 For slip $0.2$ and the default discount, the reference value vector is `[2.073066, 3.749880, 6.078790, 8.894182, 0]`, with intended right at every nonterminal state.
-
-## 9. A control-design challenge
-
-Design a tiny MDP in which an immediate attractive reward leads to a worse long-term result. Keep at most four states and two actions per nonterminal state.
-
-Specify all transition probabilities, rewards, terminal conditions and discount. Calculate $Q^\pi$ for an initial policy, improve it once by hand, and calculate the new value. Then adapt the CLI program to your model. Your submission should include a state/action table and a terminal command reproducing your result.
-
-One possible starting point: from a start state, `cash_out` terminates with $+3$ while `continue` earns $-1$ and reaches a state where `finish` terminates with $+10$. At $\gamma=0.9$, continuing returns $-1+0.9(10)=8$, exceeding $3$.
 
 ### Solution — A complete two-decision model
 
@@ -373,7 +306,7 @@ Use two nonterminal states, `start` and `work`, plus terminal state `done`. All 
 
 Initially choose `cash_out` at `start` and `quit` at `work`, giving values `(3, 0)`. Under that policy, $Q^\pi(\text{start},\text{cash_out})=3$, $Q^\pi(\text{start},\text{continue})=-1$, $Q^\pi(\text{work},\text{quit})=0$, and $Q^\pi(\text{work},\text{finish})=10$. One simultaneous improvement keeps `cash_out` and selects `finish`, producing values `(3, 10)`. A second improvement now selects `continue` because $-1+0.9(10)=8>3$, yielding the stable values `(8, 10)`.
 
-Save this adapted model-based planner as `lesson04_challenge.py`. Its acyclic model permits exact evaluation in reverse dependency order instead of iterative evaluation sweeps.
+Save this adapted model-based planner as `scratch/lesson04_challenge.py`. Its acyclic model permits exact evaluation in reverse dependency order instead of iterative evaluation sweeps.
 
 ```python
 import argparse
@@ -415,9 +348,9 @@ if __name__ == "__main__":
 ```
 
 ```bash
-python lesson04_challenge.py --help
-python lesson04_challenge.py --gamma 0.9
-python lesson04_challenge.py --gamma 0.2
+python scratch/lesson04_challenge.py --help
+python scratch/lesson04_challenge.py --gamma 0.9
+python scratch/lesson04_challenge.py --gamma 0.2
 ```
 
 At discount $0.9$, the three printed rounds show `(3, 0)`, `(3, 10)`, then `(8, 10)`. At discount $0.2$, continuing with `finish` gives only $-1+0.2(10)=1$, so `cash_out` remains optimal at `start`. The attraction of the delayed reward depends on the objective’s discount, not just its undiscounted amount.
