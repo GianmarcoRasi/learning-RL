@@ -7,7 +7,7 @@ value functions and the Bellman equation, multi-armed bandits, and dynamic progr
 
 - Python 3.10 or newer, with `venv` and `pip` available.
 - The text-based labs use only the Python standard library.
-- **Matplotlib** is the only third-party package needed for the optional plots in Lesson 1.
+- **Matplotlib** is installed by default for plotting throughout the course. Lesson 1 currently provides PNG plot commands.
 
 Run the setup and example commands below from the project root (`learning-RL`).
 
@@ -66,36 +66,31 @@ With the virtual environment activated, update `pip`:
 python -m pip install --upgrade pip
 ```
 
-Install the course in editable mode. Text runs require no third-party runtime packages:
+Install the course in editable mode, including Matplotlib:
 
 ```bash
 python -m pip install -e .
 ```
 
-To also generate Lesson 1 plots, install the optional plotting dependencies:
-
-```bash
-python -m pip install -e ".[plots]"
-```
-
-The `pyproject.toml` declares Python support and optional dependencies. An editable
-installation uses the files under `src/`, so source edits take effect on the next run.
+The `pyproject.toml` declares Python support and default dependencies. This setup
+prepares the environment for plotting in current and subsequent lessons. Plot
+files are generated only when requested by a lesson command.
 
 ## Project layout
 
 - `src/learning_rl/lessons/`: runnable labs for Lessons 1–4.
 - `src/learning_rl/environments/`: the shared LineWorld interaction and transition model.
-- `src/learning_rl/plotting/`: optional plotting functions; currently Lesson 1.
+- `src/learning_rl/plotting/`: plotting functions; currently Lesson 1.
 - `docs/lessons/`: theory, usage tutorials, exercises, and their solutions.
 - `docs/flashcards/`: study flashcards.
-- `tests/`: numeric, CLI, and optional plotting checks.
+- `tests/`: numeric, CLI, and plotting checks.
 - `output/`: automatically saved command logs, grouped by lesson and run, plus optional plots. See [output conventions](output/README.md). Only its README is tracked.
-- `scratch/`: local copies of standalone solution programs (ignored by Git).
 
 Start with the [Lesson 1 theory](docs/lessons/RL-lesson-01-rl-foundations-01.md)
 and its [hands-on tutorial](docs/lessons/RL-lesson-01-rl-foundations-02-hands-on.md).
-The tutorials link to source files and show commands; exercise solutions remain in
-those tutorials. Run all examples from the repository root after installing the course.
+The tutorials link to source files and show commands. Hands-on exercises use the
+supplied code and ask for specific outputs and interpretations; they never require
+source edits or new programs. Solutions remain in those tutorials. Run all examples from the repository root after installing the course.
 
 ## Check the code
 
@@ -103,7 +98,7 @@ those tutorials. Run all examples from the repository root after installing the 
 python -m unittest discover -s tests -v
 ```
 
-Plotting checks run when Matplotlib is installed and are skipped otherwise.
+Plotting checks run with Matplotlib, included in the standard installation.
 
 ## Finish or resume a session
 

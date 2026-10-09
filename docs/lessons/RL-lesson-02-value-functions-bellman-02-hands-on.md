@@ -1,14 +1,15 @@
 # Lesson 2 — Value Functions and the Bellman Equation — Version 2 — Hands-on (Python)
 
 > **Concepts and theoretical exercises:** [RL-lesson-02-value-functions-bellman](RL-lesson-02-value-functions-bellman-01.md)  
-> **Study pace:** Allow 45–75 minutes for the coding lab and practical exercises.  
+> **Study pace:** Allow 45–75 minutes for the experiment lab and practical exercises.
+>
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 
 ## Setup and commands
 
-Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../../README.md#create-a-local-virtual-environment) and [package installation instructions](../../README.md#install-packages) in the README before starting. The README also covers optional plotting dependencies for Lesson 1.
+Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../../README.md#create-a-local-virtual-environment) and [package installation instructions](../../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
 
-The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
+The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. No source edits or new programs are required. Exercises and solutions follow at the end.
 
 ### Lesson output
 
@@ -115,42 +116,22 @@ $$
 
 The maximum norm $\|\cdot\|_\infty$ means the largest absolute entry. A residual $0.01$ gives an error bound $0.1$ at $\gamma=0.9$, but $1$ at $\gamma=0.99$. These are worst-case bounds, not exact errors. The stretch exercises derive them.
 
-## Exercises — Interpretation and coding
+## Exercises - Run, report and interpret
 
-1. Derive $V(3)$ under the random policy. Check that $V(3)=0.5[-1+\gamma V(2)]+0.5(10)$.
-2. Calculate all values for the always-right policy by hand; verify with the CLI.
-3. Compare 100, 1,000 and 10,000 MC episodes at the same seed. Which estimates vary most?
-4. Compare DP sweep counts for $\gamma=0.5$, $0.9$ and $0.99$.
-5. Run `--right-prob 0`. Why can discounted DP compute values although the goal is never reached? Why does finite truncated MC estimate a different quantity?
-6. Add a `--visit-mode first` option to MC, retaining the every-visit default. A first-visit update uses the return following the earliest visit to a state in each episode. Compute returns backward, then choose earliest visits in forward order; selecting the first state encountered backward selects the *last* visit instead. Include a terminal command demonstrating both modes.
+Include your commands and the requested output rows with every answer.
+
+1. Run default DP, report its state-three value, and verify that $V(3)=0.5[-1+\gamma V(2)]+0.5(10)$.
+2. Calculate all values for the always-right policy by hand; provide the CLI value vector and compare it with your calculation.
+3. Compare 100, 1,000 and 10,000 MC episodes at the same seed. Provide the MC value vectors, visit counts and truncation counts. Which estimates vary most?
+4. Provide a table of DP sweep counts for $\gamma=0.5$, $0.9$ and $0.99$.
+5. Run `--method compare --right-prob 0 --max-steps 3 --episodes 100`. Report the DP and MC vectors, visit counts and truncation count. Why can discounted DP compute values although the goal is never reached? Why does finite truncated MC estimate a different quantity?
+6. **Measure cutoff bias.** Run `--method compare --right-prob 0 --episodes 100` with `--max-steps 1`, `3` and `10`. Provide a table of state-zero DP value, MC estimate, visit count and truncated episodes. Explain why increasing episode count alone cannot remove a fixed cutoff's bias.
 
 ------------------------------------------------------------------------
 
-### Additional challenge — Improve the policy
+### Additional challenge — Compare fixed policies
 
-Return to the five-state LineWorld.
-
-You now have estimated $Q(s,a)$ values---or can reason about them.
-
-Construct a new policy:
-
-$$
-\pi'(s)\in\arg\max_a Q(s,a).
-$$
-
-Then compare the new policy with the random policy.
-
-Measure:
-
--   average episode return;
--   average episode length;
--   success rate.
-
-### Think carefully
-
-If the estimates of $Q$ are imperfect, is it always safe to stop exploring and choose the largest estimate forever?
-
-This question leads directly toward bandits, exploration strategies, Monte Carlo control, temporal-difference learning, and eventually Q-learning.
+Use the Lesson 2 CLI to report DP values for right probabilities `0.5` and `1`. Use the Lesson 1 CLI to compare their returns, mean episode lengths and success rates with `--compare --episodes 10000 --max-steps 1000 --seed 7 --quiet`. Provide both summary rows and explain why moving right always improves this route. If value estimates are noisy, could a greedy choice still select the wrong action?
 
 ### Solutions — Exercises 1–6
 
@@ -205,128 +186,30 @@ python -m learning_rl.lessons.lesson02 --method compare --right-prob 0 --max-ste
 
 Every sampled run stays at state zero and truncates. DP computes $V(s)=-1/(1-0.9)=-10$ for every nonterminal state. The three-reward first suffix has return $-2.71$. Every-visit MC averages all three suffixes, $[-2.71,-1.9,-1]$, so the reported state-zero estimate is $-1.87$. Other nonterminal states are `unvisited`. More repetitions of this same cutoff do not recover the infinite-horizon value.
 
-#### 6. Implement first-visit Monte Carlo
-
-Replace the `sample()` function in `src/learning_rl/lessons/lesson02.py` with the following. It keeps every-visit as the default, computes every suffix backward, and selects the earliest visit by scanning forward.
-
-```python
-def sample(size, gamma, right_prob, episodes, max_steps, rng, visit_mode="every"):
-    sums = [0.0] * size
-    counts = [0] * size
-    truncated = 0
-    for _ in range(episodes):
-        state, trajectory, done = 0, [], False
-        for _ in range(max_steps):
-            action = int(rng.random() < right_prob)
-            nxt, reward, done = transition(state, action, size)
-            trajectory.append((state, reward))
-            state = nxt
-            if done:
-                break
-        truncated += int(not done)
-        returns = [0.0] * len(trajectory)
-        G = 0.0
-        for t in range(len(trajectory) - 1, -1, -1):
-            G = trajectory[t][1] + gamma * G
-            returns[t] = G
-        seen = set()
-        for (state, _), G in zip(trajectory, returns):
-            if visit_mode == "first" and state in seen:
-                continue
-            seen.add(state)
-            sums[state] += G
-            counts[state] += 1
-    values = [sums[s] / counts[s] if counts[s] else None for s in range(size)]
-    values[-1] = 0.0
-    return values, counts, truncated
-```
-
-Add this argument before parsing:
-
-```python
-    parser.add_argument("--visit-mode", choices=["every", "first"], default="every")
-```
-
-Replace the `sample()` call in `main()` with:
-
-```python
-        estimates, counts, truncated = sample(
-            args.size, args.gamma, args.right_prob, args.episodes,
-            args.max_steps, random.Random(args.seed), args.visit_mode)
-```
+#### 6. Measure cutoff bias
 
 ```bash
-python -m learning_rl.lessons.lesson02 --method mc --visit-mode every --episodes 10000 --seed 7
-python -m learning_rl.lessons.lesson02 --method mc --visit-mode first --episodes 10000 --seed 7
-python -m learning_rl.lessons.lesson02 --method mc --visit-mode first --right-prob 0 --max-steps 3 --episodes 1
+python -m learning_rl.lessons.lesson02 --method compare --right-prob 0 --max-steps 1 --episodes 100
+python -m learning_rl.lessons.lesson02 --method compare --right-prob 0 --max-steps 3 --episodes 100
+python -m learning_rl.lessons.lesson02 --method compare --right-prob 0 --max-steps 10 --episodes 100
 ```
 
-In the final command, state zero has one counted visit and value $-2.71$; the every-visit counterpart has three counted visits and value $-1.87$. This check distinguishes the earliest visit from the last visit, whose return would be $-1$. Both modes retain zero continuation at truncation.
+At the default discount, DP gives state-zero value approximately `-10` in each run. Every episode stays at zero and truncates; other nonterminal states are unvisited by MC.
 
-### Solution — Improve and measure the policy
+| Cutoff | State-zero MC estimate | State-zero visits | Truncated episodes |
+| ---: | ---: | ---: | ---: |
+| 1 | -1 | 100 | 100 |
+| 3 | -1.87 | 300 | 100 |
+| 10 | -4.138106 | 1000 | 100 |
 
-Use the known model to compute $Q^\pi(s,a)=r+\gamma V^\pi(s')$ from the random policy’s DP values. At states zero through three, the respective `(left, right)` values are approximately `(-5.0522, -3.9527)`, `(-5.0522, -1.5094)`, `(-3.9527, 2.8208)`, and `(-1.5094, 10)`. Greediness therefore selects right everywhere.
+Every-visit MC averages suffixes of lengths 1 through the cutoff. Each suffix omits the infinite continuation. Repeating identical episodes increases counts without changing that average. A larger cutoff includes more rewards, bringing the estimate closer to `-10`.
 
-Save the following as `scratch/lesson02_compare.py` in the repository root. It imports the original lesson’s functions, computes the improved policy, and measures both policies with the same episode and cutoff settings.
-
-```python
-import argparse
-import random
-from learning_rl.lessons.lesson02 import evaluate, transition
-
-
-def measure(policy, episodes, max_steps, gamma, seed):
-    rng = random.Random(seed)
-    total_return = total_steps = successes = 0
-    for _ in range(episodes):
-        state, G, done = 0, 0.0, False
-        for t in range(max_steps):
-            action = int(rng.random() < policy[state])
-            state, reward, done = transition(state, action, 5)
-            G += gamma ** t * reward
-            if done:
-                break
-        total_return += G
-        total_steps += t + 1
-        successes += int(done)
-    return total_return / episodes, total_steps / episodes, successes / episodes
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Compare random and improved policies.")
-    parser.add_argument("--episodes", type=int, default=10000)
-    parser.add_argument("--max-steps", type=int, default=1000)
-    parser.add_argument("--gamma", type=float, default=0.9)
-    parser.add_argument("--seed", type=int, default=7)
-    args = parser.parse_args()
-    if min(args.episodes, args.max_steps) < 1 or not 0 <= args.gamma < 1:
-        parser.error("positive counts and gamma in [0, 1) required")
-    values, _ = evaluate(5, args.gamma, 0.5, 1e-10, 100000)
-    improved = []
-    for state in range(4):
-        q = []
-        for action in (0, 1):
-            nxt, reward, done = transition(state, action, 5)
-            q.append(reward + args.gamma * (0.0 if done else values[nxt]))
-        improved.append(float(q[1] > q[0]))
-    for name, policy in [("random", [0.5] * 4), ("improved", improved)]:
-        G, length, success = measure(policy, args.episodes, args.max_steps,
-                                     args.gamma, args.seed)
-        print(f"policy={name} mean_return={G:.6f} mean_steps={length:.3f} "
-              f"success_rate={success:.3f}")
-
-
-if __name__ == "__main__":
-    main()
-```
+### Solution — Compare fixed policies
 
 ```bash
-python scratch/lesson02_compare.py --help
-python scratch/lesson02_compare.py --episodes 10000 --seed 7
+python -m learning_rl.lessons.lesson02 --method dp --right-prob 0.5
+python -m learning_rl.lessons.lesson02 --method dp --right-prob 1
+python -m learning_rl.lessons.lesson01 --compare --episodes 10000 --max-steps 1000 --seed 7 --quiet
 ```
 
-At the default discount, the improved policy has return $4.58$, length four and success rate one on every run. The random policy’s mean return approaches $-4.50247$ and its unlimited-run mean length is 20. Imperfect estimates can reverse action rankings; choosing their maximum forever can prevent collecting the evidence needed to correct that mistake. This solution uses a known model rather than claiming that noisy estimates always identify the correct improvement.
-
-For the command above, one reference run reports random-policy mean return `-4.525890`, mean length `20.026`, and success rate `1.000`; the improved policy reports `4.580000`, `4.000`, and `1.000`. Both policies can reliably finish while earning very different returns and using very different numbers of moves.
-
-------------------------------------------------------------------------
+The random-policy DP vector is approximately `[-4.50247, -3.28080, -0.56597, 4.24531, 0]`; always-right gives `[4.58, 6.2, 8, 10, 0]`. The Lesson 1 summary supplies measured returns, lengths and success rates. Always-right has return `4.58`, length four and success rate one. The random policy's mean return approaches `-4.50247` and its unlimited-run mean length is 20. Report your measured random-policy row, which can vary with the Python environment. Both policies can finish reliably while earning different returns. Noisy estimates can reverse action rankings; choosing their maximum forever can prevent collecting evidence needed to correct that mistake.

@@ -2,7 +2,6 @@
 
 import contextlib
 import importlib
-import importlib.util
 import io
 import os
 import random
@@ -137,7 +136,6 @@ class LessonChecks(unittest.TestCase):
                                      output.getvalue())
 
 
-@unittest.skipUnless(importlib.util.find_spec("matplotlib"), "Optional Matplotlib not installed")
 class PlotChecks(unittest.TestCase):
     def test_all_plot_types_and_saved_cli_output(self):
         import matplotlib
