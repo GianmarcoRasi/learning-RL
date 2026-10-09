@@ -109,7 +109,7 @@ Before running the program, predict how many transitions it takes to finish and 
 
 ### Run from your terminal
 
-See the [command options table](#command-options) for accepted values and defaults. The examples below show the full terminal output with `--verbose`. In the saved-file paths, `TIMESTAMP` stands for the directory created for that run; path separators depend on your operating system. Seeded random results are reproducible within the same Python environment.
+See the [command options table](#command-options) for accepted values and defaults. The examples below show the full output with `--verbose`, with summary rows formatted as Markdown tables for readability. In the saved-file paths, `TIMESTAMP` stands for the directory created for that run; path separators depend on your operating system. Seeded random results are reproducible within the same Python environment.
 
 **Inspect one always-right episode.** Follow the courier's decisions from the depot to the goal:
 
@@ -123,11 +123,17 @@ policy=right episode=1 state=1 action=1 next_state=2 reward=-1
 policy=right episode=1 state=2 action=1 next_state=3 reward=-1
 policy=right episode=1 state=3 action=1 next_state=4 reward=10
 policy=right episode=1 steps=4 reward_sum=7.000 return=4.580 terminated=True truncated=False
+```
 
-Summary (gamma=0.9; returns stop at termination or cutoff)
-policy     episodes   reward_sum       return      steps  success_rate  truncated
-right             1        7.000        4.580      4.000         1.000          0
-reward_sum, return and steps are means over all recorded episodes.
+**Summary (gamma=0.9; returns stop at termination or cutoff)**
+
+| policy | episodes | reward_sum | return | steps | success_rate | truncated |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| right | 1 | 7.000 | 4.580 | 4.000 | 1.000 | 0 |
+
+`reward_sum`, `return` and `steps` are means over all recorded episodes.
+
+```text
 Summary saved to output/lesson01/TIMESTAMP/summary.csv
 Output saved to output/lesson01/TIMESTAMP/run.log
 ```
@@ -146,13 +152,16 @@ $$
 RL lesson01 --compare --episodes 100 --seed 7 --quiet --verbose
 ```
 
-```text
+**Summary (gamma=0.9; returns stop at termination or cutoff)**
 
-Summary (gamma=0.9; returns stop at termination or cutoff)
-policy     episodes   reward_sum       return      steps  success_rate  truncated
-right           100        7.000        4.580      4.000         1.000          0
-random          100      -10.570       -4.697     21.570         1.000          0
-reward_sum, return and steps are means over all recorded episodes.
+| policy | episodes | reward_sum | return | steps | success_rate | truncated |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| right | 100 | 7.000 | 4.580 | 4.000 | 1.000 | 0 |
+| random | 100 | -10.570 | -4.697 | 21.570 | 1.000 | 0 |
+
+`reward_sum`, `return` and `steps` are means over all recorded episodes.
+
+```text
 Summary saved to output/lesson01/TIMESTAMP/summary.csv
 Output saved to output/lesson01/TIMESTAMP/run.log
 ```
@@ -171,13 +180,16 @@ Visualize the same 100-episode comparison, using the first episode of each polic
 RL lesson01 --compare --episodes 100 --seed 7 --quiet --plot-episodes 1 --plots output/lesson01/reference-plots/plots --verbose
 ```
 
-```text
+**Summary (gamma=0.9; returns stop at termination or cutoff)**
 
-Summary (gamma=0.9; returns stop at termination or cutoff)
-policy     episodes   reward_sum       return      steps  success_rate  truncated
-right           100        7.000        4.580      4.000         1.000          0
-random          100      -10.570       -4.697     21.570         1.000          0
-reward_sum, return and steps are means over all recorded episodes.
+| policy | episodes | reward_sum | return | steps | success_rate | truncated |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| right | 100 | 7.000 | 4.580 | 4.000 | 1.000 | 0 |
+| random | 100 | -10.570 | -4.697 | 21.570 | 1.000 | 0 |
+
+`reward_sum`, `return` and `steps` are means over all recorded episodes.
+
+```text
 Summary saved to output/lesson01/TIMESTAMP/summary.csv
 Plots saved to WORKING_DIRECTORY/output/lesson01/reference-plots/plots
 Output saved to output/lesson01/TIMESTAMP/run.log
