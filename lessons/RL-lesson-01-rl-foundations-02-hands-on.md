@@ -7,6 +7,8 @@
 >
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
 
+> **Code:** Lesson programs are in `src/learning_rl/lessons/lessonNN.py`, where `NN` is the two-digit lesson number (for this lesson, `lesson01.py`).
+
 ## Setup and commands
 
 After installation, run lesson commands from any directory with the project virtual environment activated. Relative output paths are resolved from your current directory. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting.
@@ -66,16 +68,6 @@ Each numbered position is a state. Left at state $0$ leaves the agent there and 
 Going straight right gives rewards $-1,-1,-1,10$. The final move gives $10$ total, rather than $10-1$. This small world lets us inspect every decision without the extra details of a real delivery problem.
 
 Before running the program, predict how many transitions it takes to finish and how a left move changes that number. The program implements specified policies.
-
-### Find the implementation
-
-| File | Responsibility |
-| --- | --- |
-| [Lesson 1 runner](../src/learning_rl/lessons/lesson01.py) | `Episode` records, `run_episode()`, summaries, and CLI arguments |
-| [LineWorld](../src/learning_rl/environments/lineworld.py) | Environment reset, step, and deterministic transition model |
-| [Lesson 1 plots](../src/learning_rl/plotting/lesson01.py) | Five plotting functions consuming recorded episodes |
-
-The runner records actions and outcomes before calculating summaries or generating plots. Recording and plotting do not change the random action sequence. The environment reports termination; the runner marks a cutoff as truncation. A cutoff stops the recorded return and does not estimate missing continuation.
 
 ### Run from your terminal
 
