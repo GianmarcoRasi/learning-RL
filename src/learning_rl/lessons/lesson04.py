@@ -62,8 +62,8 @@ def value_iteration(size, gamma, theta, max_iterations):
     raise RuntimeError("Value iteration did not converge")
 
 
-def main(argv=None):
-    parser = argparse.ArgumentParser(description="Find optimal LineWorld policies with DP.")
+def main(argv=None, *, prog=None):
+    parser = argparse.ArgumentParser(prog=prog, description="Find optimal LineWorld policies with DP.")
     parser.add_argument("--algorithm", choices=["policy", "value", "both"], default="both")
     parser.add_argument("--size", type=int, default=5)
     parser.add_argument("--gamma", type=float, default=0.9)

@@ -33,10 +33,10 @@ Add `--output-dir PATH` to a lesson command to choose where its `run.log` is sav
 The program creates the directory automatically:
 
 ```bash
-python -m RL lesson01 --output-dir output/lesson01/my-run
-python -m RL lesson02 --output-dir output/lesson02/my-run
-python -m RL lesson03 --output-dir output/lesson03/my-run
-python -m RL lesson04 --output-dir output/lesson04/my-run
+RL lesson01 --output-dir output/lesson01/my-run
+RL lesson02 --output-dir output/lesson02/my-run
+RL lesson03 --output-dir output/lesson03/my-run
+RL lesson04 --output-dir output/lesson04/my-run
 ```
 
 Use distinct names for different settings. Reusing a directory overwrites `run.log`.

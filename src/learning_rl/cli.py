@@ -16,6 +16,7 @@ LESSONS = {
 def main(argv=None):
     arguments = list(sys.argv[1:] if argv is None else argv)
     parser = argparse.ArgumentParser(
+        prog="RL",
         description="Run the reinforcement learning course lessons.",
         epilog="Use %(prog)s lesson01 --help for a lesson's experiment arguments.",
     )
@@ -27,4 +28,4 @@ def main(argv=None):
         return
     selected = parser.parse_args(arguments[:1])
     module = importlib.import_module(f"learning_rl.lessons.{selected.lesson}")
-    module.main(arguments[1:])
+    module.main(arguments[1:], prog=f"RL {selected.lesson}")

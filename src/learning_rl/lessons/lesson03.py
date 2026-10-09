@@ -35,8 +35,8 @@ def experiment(means, steps, epsilon, initial, seed, run):
     return reward_sum / steps, pseudo_regret, optimal_count / steps, estimates, counts
 
 
-def main(argv=None):
-    parser = argparse.ArgumentParser(description="Compare epsilon-greedy Gaussian bandits.")
+def main(argv=None, *, prog=None):
+    parser = argparse.ArgumentParser(prog=prog, description="Compare epsilon-greedy Gaussian bandits.")
     parser.add_argument("--means", type=float, nargs="+", default=[0.0, 0.2, 1.0])
     parser.add_argument("--epsilons", type=float, nargs="+", default=[0.0, 0.1, 1.0])
     parser.add_argument("--steps", type=int, default=2000)

@@ -59,12 +59,12 @@ The `mc` mode averages observed suffix returns from every visit. Within-episode 
 ### Run and compare
 
 ```bash
-python -m RL lesson02 --help
-python -m RL lesson02 --method compare --episodes 10000 --seed 7
-python -m RL lesson02 --method dp --right-prob 1
-python -m RL lesson02 --method compare --gamma 0.5 --episodes 10000
-python -m RL lesson02 --method dp --gamma 0.99
-python -m RL lesson02 --method mc --max-steps 2 --episodes 100
+RL lesson02 --help
+RL lesson02 --method compare --episodes 10000 --seed 7
+RL lesson02 --method dp --right-prob 1
+RL lesson02 --method compare --gamma 0.5 --episodes 10000
+RL lesson02 --method dp --gamma 0.99
+RL lesson02 --method mc --max-steps 2 --episodes 100
 ```
 
 With `--method dp --right-prob 1`, expect the values `[4.58, 6.2, 8.0, 10.0, 0.0]` at the default discount. With a random policy, MC estimates should approach the DP values as sufficient complete experience is collected; individual finite runs need not improve monotonically when you add episodes.
@@ -146,7 +146,7 @@ Left earns $-1$ and reaches state two; right earns $10$ and terminates. Each has
 Starting from terminal value zero, work backward: $V(3)=10$, $V(2)=-1+0.9(10)=8$, $V(1)=-1+0.9(8)=6.2$, and $V(0)=-1+0.9(6.2)=4.58$.
 
 ```bash
-python -m RL lesson02 --method dp --right-prob 1
+RL lesson02 --method dp --right-prob 1
 ```
 
 The printed vector is `[4.58, 6.2, 8.0, 10.0, 0.0]` up to formatting.
@@ -154,9 +154,9 @@ The printed vector is `[4.58, 6.2, 8.0, 10.0, 0.0]` up to formatting.
 #### 3. Compare Monte Carlo estimates
 
 ```bash
-python -m RL lesson02 --method compare --episodes 100 --seed 7
-python -m RL lesson02 --method compare --episodes 1000 --seed 7
-python -m RL lesson02 --method compare --episodes 10000 --seed 7
+RL lesson02 --method compare --episodes 100 --seed 7
+RL lesson02 --method compare --episodes 1000 --seed 7
+RL lesson02 --method compare --episodes 10000 --seed 7
 ```
 
 One reference run of the original program gives these values, rounded to four decimals; terminal value is zero throughout.
@@ -173,9 +173,9 @@ State three varies most across these three runs. It has fewer visits than earlie
 #### 4. Compare evaluation sweeps
 
 ```bash
-python -m RL lesson02 --method dp --gamma 0.5
-python -m RL lesson02 --method dp --gamma 0.9
-python -m RL lesson02 --method dp --gamma 0.99
+RL lesson02 --method dp --gamma 0.5
+RL lesson02 --method dp --gamma 0.9
+RL lesson02 --method dp --gamma 0.99
 ```
 
 With the original defaults, the respective sweep counts are 31, 134, and 308. A discount closer to one weakens the contraction guarantee; here the evaluation takes more sweeps. Keep the policy, initialization and tolerance fixed when comparing.
@@ -183,7 +183,7 @@ With the original defaults, the respective sweep counts are 31, 134, and 308. A 
 #### 5. Evaluate a policy that never finishes
 
 ```bash
-python -m RL lesson02 --method compare --right-prob 0 --max-steps 3 --episodes 100
+RL lesson02 --method compare --right-prob 0 --max-steps 3 --episodes 100
 ```
 
 Every sampled run stays at state zero and truncates. DP computes $V(s)=-1/(1-0.9)=-10$ for every nonterminal state. The three-reward first suffix has return $-2.71$. Every-visit MC averages all three suffixes, $[-2.71,-1.9,-1]$, so the reported state-zero estimate is $-1.87$. Other nonterminal states are `unvisited`. More repetitions of this same cutoff do not recover the infinite-horizon value.
@@ -191,9 +191,9 @@ Every sampled run stays at state zero and truncates. DP computes $V(s)=-1/(1-0.9
 #### 6. Measure cutoff bias
 
 ```bash
-python -m RL lesson02 --method compare --right-prob 0 --max-steps 1 --episodes 100
-python -m RL lesson02 --method compare --right-prob 0 --max-steps 3 --episodes 100
-python -m RL lesson02 --method compare --right-prob 0 --max-steps 10 --episodes 100
+RL lesson02 --method compare --right-prob 0 --max-steps 1 --episodes 100
+RL lesson02 --method compare --right-prob 0 --max-steps 3 --episodes 100
+RL lesson02 --method compare --right-prob 0 --max-steps 10 --episodes 100
 ```
 
 At the default discount, DP gives state-zero value approximately `-10` in each run. Every episode stays at zero and truncates; other nonterminal states are unvisited by MC.
@@ -209,9 +209,9 @@ Every-visit MC averages suffixes of lengths 1 through the cutoff. Each suffix om
 ### Solution — Compare fixed policies
 
 ```bash
-python -m RL lesson02 --method dp --right-prob 0.5
-python -m RL lesson02 --method dp --right-prob 1
-python -m RL lesson01 --compare --episodes 10000 --max-steps 1000 --seed 7 --quiet
+RL lesson02 --method dp --right-prob 0.5
+RL lesson02 --method dp --right-prob 1
+RL lesson01 --compare --episodes 10000 --max-steps 1000 --seed 7 --quiet
 ```
 
 The random-policy DP vector is approximately `[-4.50247, -3.28080, -0.56597, 4.24531, 0]`; always-right gives `[4.58, 6.2, 8, 10, 0]`. The Lesson 1 summary supplies measured returns, lengths and success rates. Always-right has return `4.58`, length four and success rate one. The random policy's mean return approaches `-4.50247` and its unlimited-run mean length is 20. Report your measured random-policy row, which can vary with the Python environment. Both policies can finish reliably while earning different returns. Noisy estimates can reverse action rankings; choosing their maximum forever can prevent collecting evidence needed to correct that mistake.

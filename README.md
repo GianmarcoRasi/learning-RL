@@ -60,45 +60,50 @@ package provided by your operating system, then retry.
 
 ## Install packages
 
-With the virtual environment activated, update `pip`:
+From the project root, with the virtual environment activated, update `pip`
+and install the course:
 
 ```bash
-python -m pip install --upgrade pip
+pip install --upgrade pip
+pip install -e .
 ```
 
-Install the course in editable mode, including Matplotlib:
+Installation includes Matplotlib and creates the `RL` command in the virtual
+environment's scripts directory. Activating the environment adds that directory
+to your terminal's command search path. Editable installation means changes to
+the lesson code are available immediately.
 
-```bash
-python -m pip install -e .
-```
-
-The `pyproject.toml` declares Python support and default dependencies. This setup
-prepares the environment for plotting in current and subsequent lessons. Plot
-files are generated only when requested by a lesson command.
-
-## Run a lesson
-
-After installation, use the project command:
+Check that the command is available:
 
 ```bash
 RL --help
-RL lesson01 --policy right --trace
 ```
 
-The equivalent Python module command works with the same arguments:
+If `RL` is not recognized, activate the project's virtual environment in the
+current terminal and repeat `pip install -e .` from the project root. Repeat
+installation after pulling an update that adds or changes project commands.
+
+## Run a lesson
+
+With the environment activated, use `RL lessonNN ...`, replacing `lessonNN`
+with `lesson01`, `lesson02`, `lesson03`, or `lesson04`:
 
 ```bash
-python -m RL lesson01 --policy right --trace
-python -m RL lesson02 --method dp --right-prob 1
-python -m RL lesson03 --runs 1 --steps 20
-python -m RL lesson04 --algorithm both
+RL lesson01 --policy right --trace
+RL lesson02 --method dp --right-prob 1
+RL lesson03 --runs 1 --steps 20
+RL lesson04 --algorithm both
 ```
 
-Use `lesson01` through `lesson04`; append `--help` to see each lesson's arguments.
-Python uses `-m` to run an installed package, so the form is `python -m RL`,
-rather than `python RL`. `python -m learning_rl` and the existing individual
-lesson module commands also remain available. Relative log and plot paths are
-resolved from the directory where you run the command.
+Append `--help` to see a lesson's experiment arguments:
+
+```bash
+RL lesson01 --help
+```
+
+Lesson commands work from any directory in the activated environment. Relative
+log and plot paths are resolved from the directory where you run the command.
+Plot files are generated only when requested by a lesson command.
 
 ## Shared vocabulary
 

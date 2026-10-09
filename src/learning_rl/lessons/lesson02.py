@@ -52,8 +52,8 @@ def sample(size, gamma, right_prob, episodes, max_steps, rng):
     return values, counts, truncated
 
 
-def main(argv=None):
-    parser = argparse.ArgumentParser(description="Estimate or compute LineWorld policy values.")
+def main(argv=None, *, prog=None):
+    parser = argparse.ArgumentParser(prog=prog, description="Estimate or compute LineWorld policy values.")
     parser.add_argument("--method", choices=["mc", "dp", "compare"], default="compare")
     parser.add_argument("--size", type=int, default=5)
     parser.add_argument("--gamma", type=float, default=0.9)

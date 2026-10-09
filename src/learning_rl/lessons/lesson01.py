@@ -59,8 +59,8 @@ def print_summary(experiments, gamma):
     print("reward_sum, return and steps are means over all recorded episodes.")
 
 
-def main(argv=None):
-    parser = argparse.ArgumentParser(description="Run and compare fixed LineWorld policies.")
+def main(argv=None, *, prog=None):
+    parser = argparse.ArgumentParser(prog=prog, description="Run and compare fixed LineWorld policies.")
     parser.add_argument("--policy", choices=["right", "random"], default="right")
     parser.add_argument("--size", type=int, default=5)
     parser.add_argument("--episodes", type=int, default=1)

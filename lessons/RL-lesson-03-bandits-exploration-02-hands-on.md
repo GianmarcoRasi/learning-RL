@@ -32,11 +32,11 @@ The lab reuses seed schedules across strategies. This can correlate their result
 ### Terminal commands
 
 ```bash
-python -m RL lesson03 --help
-python -m RL lesson03 --epsilons 0 0.1 1 --steps 2000 --runs 200 --seed 7
-python -m RL lesson03 --epsilons 0.1 --runs 1 --steps 100 --seed 7
-python -m RL lesson03 --epsilons 0 --initial 5 --runs 200
-python -m RL lesson03 --means 0 0.9 1 --epsilons 0 0.01 0.1 --steps 5000
+RL lesson03 --help
+RL lesson03 --epsilons 0 0.1 1 --steps 2000 --runs 200 --seed 7
+RL lesson03 --epsilons 0.1 --runs 1 --steps 100 --seed 7
+RL lesson03 --epsilons 0 --initial 5 --runs 200
+RL lesson03 --means 0 0.9 1 --epsilons 0 0.01 0.1 --steps 5000
 ```
 
 Interpret each summary row using all three main metrics. For uniform exploration, default means average to $0.4$; its expected per-pull pseudo-regret is $1-0.4=0.6$. Over 2,000 pulls, cumulative pseudo-regret should average near $1,200$, and optimal fraction near $1/3$ across enough runs. These are statistical checks, not exact outputs.
@@ -70,9 +70,9 @@ Include your commands and a table of mean reward, reward standard error, mean ps
 #### 1. Compare horizons
 
 ```bash
-python -m RL lesson03 --steps 20 --runs 200 --epsilons 0 0.1 1 --seed 7
-python -m RL lesson03 --steps 200 --runs 200 --epsilons 0 0.1 1 --seed 7
-python -m RL lesson03 --steps 2000 --runs 200 --epsilons 0 0.1 1 --seed 7
+RL lesson03 --steps 20 --runs 200 --epsilons 0 0.1 1 --seed 7
+RL lesson03 --steps 200 --runs 200 --epsilons 0 0.1 1 --seed 7
+RL lesson03 --steps 2000 --runs 200 --epsilons 0 0.1 1 --seed 7
 ```
 
 The original program gives the following reference results. Seeded random outputs can depend on the Python environment.
@@ -94,8 +94,8 @@ At 20 steps, epsilon $0.1$ has slightly lower measured mean reward than greedy; 
 #### 2. Reduce the gap
 
 ```bash
-python -m RL lesson03 --means 0 0.2 1 --steps 2000 --runs 200 --epsilons 0 0.1 --seed 7
-python -m RL lesson03 --means 0 0.9 1 --steps 2000 --runs 200 --epsilons 0 0.1 --seed 7
+RL lesson03 --means 0 0.2 1 --steps 2000 --runs 200 --epsilons 0 0.1 --seed 7
+RL lesson03 --means 0 0.9 1 --steps 2000 --runs 200 --epsilons 0 0.1 --seed 7
 ```
 
 The best-versus-second-best mean gap falls from $0.8$ to $0.1$, while reward noise still has standard deviation one. More observations are needed to distinguish nearly equal means. However, choosing arm one instead of arm two then costs only $0.1$ per pull instead of $0.8$. A lower optimal fraction can therefore coexist with a high mean reward and low regret. Report all three printed metrics; optimal fraction alone does not describe the cost of mistakes.
@@ -103,8 +103,8 @@ The best-versus-second-best mean gap falls from $0.8$ to $0.1$, while reward noi
 #### 3. Use optimistic initial values
 
 ```bash
-python -m RL lesson03 --epsilons 0 --initial 0 --steps 2000 --runs 200 --seed 7
-python -m RL lesson03 --epsilons 0 --initial 5 --steps 2000 --runs 200 --seed 7
+RL lesson03 --epsilons 0 --initial 0 --steps 2000 --runs 200 --seed 7
+RL lesson03 --epsilons 0 --initial 5 --steps 2000 --runs 200 --seed 7
 ```
 
 In a reference run, mean reward increases from approximately $0.7863$ to $0.8469$. Untried arms retain their optimistic value and can attract greedy choices after a tried arm receives a lower reward. On an arm’s first update, its count becomes one, so $Q\leftarrow Q+(R-Q)/1=R$: the initial value disappears completely for that arm. Optimism encourages early trials but does not guarantee correct identification, especially with noisy rewards.
@@ -112,7 +112,7 @@ In a reference run, mean reward increases from approximately $0.7863$ to $0.8469
 #### 4. Inspect arm estimates and counts
 
 ```bash
-python -m RL lesson03 --epsilons 0 0.1 1 --runs 1 --steps 100 --seed 7
+RL lesson03 --epsilons 0 0.1 1 --runs 1 --steps 100 --seed 7
 ```
 
 Each strategy prints a summary, an `estimates=` vector and a `counts=` vector. Copy these vectors into your answer; each count vector sums to 100. The true best arm is index two, with mean one. Reward noise and limited exploration can give another arm the highest estimate. Pure greedy can leave arms untried, while uniform exploration spreads samples across arms. A standard error of zero for one run is a reporting convention, not evidence of zero uncertainty.
@@ -120,8 +120,8 @@ Each strategy prints a summary, an `estimates=` vector and a `counts=` vector. C
 #### 5. Measure uncertainty across runs
 
 ```bash
-python -m RL lesson03 --epsilons 0.1 --runs 20 --steps 2000 --seed 7
-python -m RL lesson03 --epsilons 0.1 --runs 200 --steps 2000 --seed 7
+RL lesson03 --epsilons 0.1 --runs 20 --steps 2000 --seed 7
+RL lesson03 --epsilons 0.1 --runs 200 --steps 2000 --seed 7
 ```
 
 Report the printed metrics and divide the 20-run standard error by the 200-run standard error. If the empirical standard deviations were equal, the ratio would be $\sqrt{200/20}=\sqrt{10}\approx3.16$; measured standard deviations can differ. Each agent still takes 2,000 pulls. More independent runs improve estimation of strategy performance, rather than continuing one agent's training. Shared seed schedules mean separate standard errors do not directly test differences between epsilon settings.

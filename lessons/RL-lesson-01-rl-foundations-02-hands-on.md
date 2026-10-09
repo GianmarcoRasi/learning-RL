@@ -46,9 +46,9 @@ The runner records actions and outcomes before calculating summaries or generati
 First inspect the CLI, then run one traced episode and a batch comparison:
 
 ```bash
-python -m RL lesson01 --help
-python -m RL lesson01 --policy right --trace
-python -m RL lesson01 --compare --episodes 100 --seed 7 --quiet
+RL lesson01 --help
+RL lesson01 --policy right --trace
+RL lesson01 --compare --episodes 100 --seed 7 --quiet
 ```
 
 For the default always-right run, expect four steps, a reward sum of `7`, and discounted return `4.58` at $\gamma=0.9$:
@@ -66,7 +66,7 @@ Every command ends with a summary table. `reward_sum`, `return`, and `steps` are
 Matplotlib is included in the standard setup. Generate plots with:
 
 ```bash
-python -m RL lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/comparison/plots
+RL lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/comparison/plots
 ```
 
 `--plots DIRECTORY` saves PNG files without opening windows. Open the saved images in an image viewer. Each command uses the same filenames within its output directory, so use distinct directories for experiments you want to keep. Without `--plots`, the command produces text output only.
@@ -120,8 +120,8 @@ Try each exercise before reading its solution. Append the indicated `--plots` op
 #### 1. Compare policies and estimate stability
 
 ```bash
-python -m RL lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/100/plots
-python -m RL lesson01 --compare --episodes 1000 --seed 7 --quiet --plots output/lesson01/1000/plots
+RL lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/100/plots
+RL lesson01 --compare --episodes 1000 --seed 7 --quiet --plots output/lesson01/1000/plots
 ```
 
 Always-right takes four steps, earns total reward `7`, and has return `4.58` at the default discount, with success rate one. Random episodes have variable lengths and returns. More episodes generally give a more stable estimate; they do not train this fixed policy or guarantee a better mean. The running mean can still fluctuate.
@@ -131,7 +131,7 @@ Without a cutoff, the expected number of moves from position zero for a uniform 
 #### 2. Recognize truncation
 
 ```bash
-python -m RL lesson01 --policy right --max-steps 2 --trace --plots output/lesson01/cutoff/plots
+RL lesson01 --policy right --max-steps 2 --trace --plots output/lesson01/cutoff/plots
 ```
 
 The trajectory is $0\to1\to2$, with rewards $-1,-1$. Expect `steps=2`, `reward_sum=-2.000`, `return=-1.900`, `terminated=False`, `truncated=True`, and success rate zero. The trajectory ends with an X at position two, below the goal. The final cumulative reward is a partial sum, not an estimate of the unobserved continuation. Reaching position four requires four moves.
@@ -139,9 +139,9 @@ The trajectory is $0\to1\to2$, with rewards $-1,-1$. Expect `steps=2`, `reward_s
 #### 3. Change the discount
 
 ```bash
-python -m RL lesson01 --policy right --gamma 0 --trace --plots output/lesson01/gamma0/plots
-python -m RL lesson01 --policy right --gamma 0.5 --trace --plots output/lesson01/gamma05/plots
-python -m RL lesson01 --policy right --gamma 1 --trace --plots output/lesson01/gamma1/plots
+RL lesson01 --policy right --gamma 0 --trace --plots output/lesson01/gamma0/plots
+RL lesson01 --policy right --gamma 0.5 --trace --plots output/lesson01/gamma05/plots
+RL lesson01 --policy right --gamma 1 --trace --plots output/lesson01/gamma1/plots
 ```
 
 Actions and states remain identical because this policy does not use the discount. For rewards $[-1,-1,-1,10]$, the returns are respectively $-1$, $-0.5$, and $7$. The reward sum remains $7$. The immediate reward panels match, but cumulative discounted reward changes. The discount plot rescales the same recorded rewards without resampling actions. With a random policy, keeping the same seed and all other arguments also preserves trajectories when only the discount changes.
@@ -149,9 +149,9 @@ Actions and states remain identical because this policy does not use the discoun
 #### 4. Change reward design
 
 ```bash
-python -m RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward -1 --goal-reward 10 --plots output/lesson01/cost/plots
-python -m RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward 0 --goal-reward 1 --plots output/lesson01/sparse/plots
-python -m RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 0.9 --step-reward 0 --goal-reward 1 --plots output/lesson01/sparse-discounted/plots
+RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward -1 --goal-reward 10 --plots output/lesson01/cost/plots
+RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward 0 --goal-reward 1 --plots output/lesson01/sparse/plots
+RL lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 0.9 --step-reward 0 --goal-reward 1 --plots output/lesson01/sparse-discounted/plots
 ```
 
 Always-right earns `7` with movement costs and `1` with sparse rewards at $\gamma=1$. For a successful trajectory of length $T$, the respective undiscounted returns are $11-T$ and $1$. The first rule favors shorter successful paths; the second gives all successes the same return. A truncated sparse-reward run earns zero, so its mean return at $\gamma=1$ equals its success rate. At $0<\gamma<1$, a successful sparse-reward trajectory has return $\gamma^{T-1}$, favoring earlier completion. Changing rewards or discount alone does not change either fixed policy's actions. Compare returns within each reward rule; their scales differ across rules.
@@ -159,9 +159,9 @@ Always-right earns `7` with movement costs and `1` with sparse rewards at $\gamm
 #### 5. Compare route lengths
 
 ```bash
-python -m RL lesson01 --compare --size 3 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size3/plots
-python -m RL lesson01 --compare --size 5 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size5/plots
-python -m RL lesson01 --compare --size 8 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size8/plots
+RL lesson01 --compare --size 3 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size3/plots
+RL lesson01 --compare --size 5 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size5/plots
+RL lesson01 --compare --size 8 --episodes 1000 --seed 7 --quiet --plots output/lesson01/size8/plots
 ```
 
 Copy both summary rows for each size into your results table and attach the `right-1-trajectory.png` images. Always-right takes 2, 4 and 7 moves respectively, succeeds every time, and has discounted returns `8`, `4.58` and `0.62882` at the default discount. Its reward sums are `9`, `7` and `4`. Longer routes add movement costs and delay the goal reward. Random runs vary; report the measured means and truncation counts rather than assuming every episode finishes within the default 100-step limit. The policies remain fixed throughout.
