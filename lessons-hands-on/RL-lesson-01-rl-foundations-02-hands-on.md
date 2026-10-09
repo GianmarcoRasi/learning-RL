@@ -110,13 +110,22 @@ Before running the program, predict how many transitions it takes to finish and 
 
 ### Run from your terminal
 
-See the [command options table](#command-options) for accepted values and defaults. The examples below show the full output with `--verbose`, with summary rows formatted as Markdown tables for readability. In the saved-file paths, `TIMESTAMP` stands for the directory created for that run; path separators depend on your operating system. Seeded random results are reproducible within the same Python environment.
+See the [command options table](#command-options) for accepted values and defaults. These examples use the default file output: the terminal reports saved-file paths, and the recorded results are shown below, with summary rows formatted as Markdown tables. Seeded random results are reproducible within the same Python environment.
 
 **Inspect one always-right episode.** Follow the courier's decisions from the depot to the goal:
 
 ```bash
-RL lesson01 --policy right --trace --verbose
+RL lesson01 --policy right --trace
 ```
+
+```text
+Summary saved to output/lesson01/TIMESTAMP/summary.csv
+Output saved to output/lesson01/TIMESTAMP/run.log
+```
+
+`TIMESTAMP` stands for the new directory created for this run, for example `20261009-165307-445575`. Both files belong to the same run; path separators depend on your operating system. Open `run.log` for the trace and episode summary, and `summary.csv` for the summary table. See [Lesson output](#lesson-output) for details.
+
+The recorded transitions and episode summary in `run.log` are:
 
 ```text
 policy=right episode=1 state=0 action=1 next_state=1 reward=-1
@@ -126,18 +135,11 @@ policy=right episode=1 state=3 action=1 next_state=4 reward=10
 policy=right episode=1 steps=4 reward_sum=7.000 return=4.580 terminated=True truncated=False
 ```
 
-**Summary (gamma=0.9; returns stop at termination or cutoff)**
+**Saved summary (gamma=0.9; returns stop at termination or cutoff)**
 
 | policy | episodes | reward_sum | return | steps | success_rate | truncated |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | right | 1 | 7.000 | 4.580 | 4.000 | 1.000 | 0 |
-
-`reward_sum`, `return` and `steps` are means over all recorded episodes.
-
-```text
-Summary saved to output/lesson01/TIMESTAMP/summary.csv
-Output saved to output/lesson01/TIMESTAMP/run.log
-```
 
 Each of the first four lines identifies the policy, episode, current state, action, next state, and immediate reward. Read `action=1` as a move right: the states progress from zero to four, and only the last transition earns `10`. The episode summary confirms that reaching the goal terminates the episode after four steps, without truncation.
 
@@ -150,53 +152,39 @@ $$
 **Compare policies over a batch.** Compare 100 episodes of each fixed policy under the same environment settings:
 
 ```bash
-RL lesson01 --compare --episodes 100 --seed 7 --quiet --verbose
+RL lesson01 --compare --episodes 100 --seed 7 --quiet
 ```
 
-**Summary (gamma=0.9; returns stop at termination or cutoff)**
+The terminal prints the same two saved-file messages shown for the first command, with a new `TIMESTAMP`. This run's `summary.csv` contains:
+
+**Saved summary (gamma=0.9; returns stop at termination or cutoff)**
 
 | policy | episodes | reward_sum | return | steps | success_rate | truncated |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | right | 100 | 7.000 | 4.580 | 4.000 | 1.000 | 0 |
 | random | 100 | -10.570 | -4.697 | 21.570 | 1.000 | 0 |
 
-`reward_sum`, `return` and `steps` are means over all recorded episodes.
-
-```text
-Summary saved to output/lesson01/TIMESTAMP/summary.csv
-Output saved to output/lesson01/TIMESTAMP/run.log
-```
-
 Read the two rows together. Always-right repeats the four-step route, so its mean results match the single episode above. In this recorded batch, random also reaches the goal in every episode, but takes `21.570` steps on average. The extra movement costs lower its mean reward sum to `-10.570`, while discounting gives a mean return of `-4.697`. Equal success rates therefore do not imply equal performance. Neither policy is learning.
 
 In both tables, `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. Here both truncation counts are zero; a different seed or step limit can produce truncated random episodes.
 
-The final lines identify the saved files. Summary rows are in `summary.csv`; traces and episode summaries, when requested, are in `run.log`. See [Lesson output](#lesson-output) for their locations and contents. Without `--verbose`, the same files are saved and only their paths are printed to the terminal, including the plot directory when requested.
+Add `--verbose` to either command to also display the recorded results in the terminal. The saved files and their contents stay the same.
 
 ### Generate plots
 
 Visualize the same 100-episode comparison, using the first episode of each policy for the individual plots:
 
 ```bash
-RL lesson01 --compare --episodes 100 --seed 7 --quiet --plot-episodes 1 --plots output/lesson01/reference-plots/plots --verbose
+RL lesson01 --compare --episodes 100 --seed 7 --quiet --plot-episodes 1 --plots output/lesson01/reference-plots/plots
 ```
-
-**Summary (gamma=0.9; returns stop at termination or cutoff)**
-
-| policy | episodes | reward_sum | return | steps | success_rate | truncated |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| right | 100 | 7.000 | 4.580 | 4.000 | 1.000 | 0 |
-| random | 100 | -10.570 | -4.697 | 21.570 | 1.000 | 0 |
-
-`reward_sum`, `return` and `steps` are means over all recorded episodes.
 
 ```text
-Summary saved to output/lesson01/TIMESTAMP/summary.csv
 Plots saved to WORKING_DIRECTORY/output/lesson01/reference-plots/plots
-Output saved to output/lesson01/TIMESTAMP/run.log
 ```
 
-The summary rows match the batch above: recording and plotting consume no random draws. `WORKING_DIRECTORY` in the plot path stands for the directory from which you ran the command. The command saves the eight PNG files shown below without opening windows. Use distinct plot directories for experiments you want to keep, since later runs reuse these filenames. See the [command options table](#command-options) for other settings.
+This is the additional terminal message; the summary and log paths are reported as in the first command, with a new `TIMESTAMP`. `WORKING_DIRECTORY` stands for the directory from which you ran the command. The saved summary is identical to the batch comparison above: recording and plotting consume no random draws.
+
+The command saves the eight PNG files shown below without opening windows. Use distinct plot directories for experiments you want to keep, since later runs reuse these filenames. See the [command options table](#command-options) for other settings.
 
 | Plot | Saved files | What to inspect |
 | --- | --- | --- |
