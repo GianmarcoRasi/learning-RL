@@ -7,7 +7,7 @@
 
 ## Setup and commands
 
-Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../../README.md#create-a-local-virtual-environment) and [package installation instructions](../../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
+Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. No source edits or new programs are required. Exercises and solutions follow at the end.
 
@@ -15,7 +15,7 @@ The walkthrough and exercises use the supplied command-line programs. Run experi
 
 Lesson commands automatically save printed results to `output/lesson02/TIMESTAMP/run.log`
 and display them in the terminal. Each run gets a new directory. Use `--output-dir`
-to choose a directory; reusing it overwrites its log. See [output conventions](../../output/README.md).
+to choose a directory; reusing it overwrites its log. See [output conventions](../docs/command-outputs.md).
 
 ## 1. Practical lab --- Estimate values from experience
 
@@ -50,7 +50,7 @@ The lab uses **every-visit** MC: if an episode visits a state more than once, ea
 
 ### Find the implementation
 
-The [Lesson 2 source](../../src/learning_rl/lessons/lesson02.py) contains `evaluate()` for synchronous Bellman sweeps, `sample()` for every-visit Monte Carlo estimates, and `main()` for the command-line interface. The shared [LineWorld model](../../src/learning_rl/environments/lineworld.py) supplies transition outcomes. Ordinary transitions earn `-1`; entry to the goal earns `+10`. Terminal value is zero.
+The [Lesson 2 source](../src/learning_rl/lessons/lesson02.py) contains `evaluate()` for synchronous Bellman sweeps, `sample()` for every-visit Monte Carlo estimates, and `main()` for the command-line interface. The shared [LineWorld model](../src/learning_rl/environments/lineworld.py) supplies transition outcomes. Ordinary transitions earn `-1`; entry to the goal earns `+10`. Terminal value is zero.
 
 The `mc` mode averages observed suffix returns from every visit. Within-episode returns are correlated. The `dp` mode evaluates the known model. Both use the policy specified by `--right-prob`.
 

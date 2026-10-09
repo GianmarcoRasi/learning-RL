@@ -7,7 +7,7 @@
 
 ## Setup and commands
 
-Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../../README.md#create-a-local-virtual-environment) and [package installation instructions](../../README.md#install-packages) in the README before starting.
+Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. Exercises and solutions follow at the end.
 
@@ -15,7 +15,7 @@ The walkthrough and exercises use the supplied command-line programs. Run experi
 
 Lesson commands automatically save printed results to `output/lesson01/TIMESTAMP/run.log`
 and display them in the terminal. Each run gets a new directory. Use `--output-dir`
-to choose a directory; reusing it overwrites its log. See [output conventions](../../output/README.md).
+to choose a directory; reusing it overwrites its log. See [output conventions](../docs/command-outputs.md).
 
 ## 1. Guided tutorial — Explore LineWorld
 
@@ -37,9 +37,9 @@ Before running the program, predict how many transitions it takes to finish and 
 
 | File | Responsibility |
 | --- | --- |
-| [Lesson 1 runner](../../src/learning_rl/lessons/lesson01.py) | `Episode` records, `run_episode()`, summaries, and CLI arguments |
-| [LineWorld](../../src/learning_rl/environments/lineworld.py) | Environment reset, step, and deterministic transition model |
-| [Lesson 1 plots](../../src/learning_rl/plotting/lesson01.py) | Five plotting functions consuming recorded episodes |
+| [Lesson 1 runner](../src/learning_rl/lessons/lesson01.py) | `Episode` records, `run_episode()`, summaries, and CLI arguments |
+| [LineWorld](../src/learning_rl/environments/lineworld.py) | Environment reset, step, and deterministic transition model |
+| [Lesson 1 plots](../src/learning_rl/plotting/lesson01.py) | Five plotting functions consuming recorded episodes |
 
 The runner records actions and outcomes before calculating summaries or generating plots. Recording and plotting do not change the random action sequence. The environment reports termination; the runner marks a cutoff as truncation. A cutoff stops the recorded return and does not estimate missing continuation.
 

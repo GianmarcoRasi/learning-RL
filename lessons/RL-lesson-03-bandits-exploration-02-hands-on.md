@@ -7,7 +7,7 @@
 
 ## Setup and commands
 
-Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../../README.md#create-a-local-virtual-environment) and [package installation instructions](../../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
+Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. No source edits or new programs are required. Exercises and solutions follow at the end.
 
@@ -15,13 +15,13 @@ The walkthrough and exercises use the supplied command-line programs. Run experi
 
 Lesson commands automatically save printed results to `output/lesson03/TIMESTAMP/run.log`
 and display them in the terminal. Each run gets a new directory. Use `--output-dir`
-to choose a directory; reusing it overwrites its log. See [output conventions](../../output/README.md).
+to choose a directory; reusing it overwrites its log. See [output conventions](../docs/command-outputs.md).
 
 ## 1. Guided tutorial — Run the lab
 
 ### Find the implementation
 
-The [Lesson 3 source](../../src/learning_rl/lessons/lesson03.py) contains `experiment()` for one bandit run and `main()` for comparisons across epsilon settings and repeated runs. Each arm returns a Gaussian reward with its supplied mean and standard deviation one. The agent sees rewards; simulator metrics use hidden means. Random tie breaking avoids favoring arm zero.
+The [Lesson 3 source](../src/learning_rl/lessons/lesson03.py) contains `experiment()` for one bandit run and `main()` for comparisons across epsilon settings and repeated runs. Each arm returns a Gaussian reward with its supplied mean and standard deviation one. The agent sees rewards; simulator metrics use hidden means. Random tie breaking avoids favoring arm zero.
 
 The `--initial` estimate affects early action selection. With sample averages, an arm's first reward replaces its initial estimate. Optimism encourages early exploration but cannot guarantee finding the best arm.
 

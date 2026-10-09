@@ -7,7 +7,7 @@
 
 ## Setup and commands
 
-Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../../README.md#create-a-local-virtual-environment) and [package installation instructions](../../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
+Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. No source edits or new programs are required. Exercises and solutions follow at the end.
 
@@ -15,7 +15,7 @@ The walkthrough and exercises use the supplied command-line programs. Run experi
 
 Lesson commands automatically save printed results to `output/lesson04/TIMESTAMP/run.log`
 and display them in the terminal. Each run gets a new directory. Use `--output-dir`
-to choose a directory; reusing it overwrites its log. See [output conventions](../../output/README.md).
+to choose a directory; reusing it overwrites its log. See [output conventions](../docs/command-outputs.md).
 
 ## 1. The environment and assumptions
 
@@ -42,7 +42,7 @@ A known model supplies $p(s',r\mid s,a)$: the probability of each next-state-and
 
 ### Find the implementation
 
-The [Lesson 4 source](../../src/learning_rl/lessons/lesson04.py) contains `action_value()`, `evaluate()`, `policy_iteration()`, and `value_iteration()`. It imports the shared [LineWorld model](../../src/learning_rl/environments/lineworld.py). Policy iteration starts with a uniform random policy; both algorithms choose left on exact action-value ties. Numerical evaluation stops at a tolerance.
+The [Lesson 4 source](../src/learning_rl/lessons/lesson04.py) contains `action_value()`, `evaluate()`, `policy_iteration()`, and `value_iteration()`. It imports the shared [LineWorld model](../src/learning_rl/environments/lineworld.py). Policy iteration starts with a uniform random policy; both algorithms choose left on exact action-value ties. Numerical evaluation stops at a tolerance.
 
 The CLI compares algorithms and varies route length, discount and tolerance. It counts policy evaluation sweeps separately from policy improvement rounds: these are different units of work.
 
