@@ -96,13 +96,43 @@ Compare the fixed right-moving and random policies across 1,000 episodes:
 python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet
 ```
 
-After installing Matplotlib, save PNG plots in `outputs/lesson01`:
+After installing Matplotlib, save PNG plots in `output/lesson01/comparison/plots`:
 
 ```bash
-python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --plots outputs/lesson01
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --plots output/lesson01/comparison/plots
 ```
 
 The program compares fixed policies; it does not train an agent yet.
+
+## Save command outputs
+
+Use `output/lessonNN/RUN_NAME/` for each experiment. Keep its terminal output in
+`run.log` and optional figures in `plots/`. Use descriptive run names such as
+`comparison-100-seed7`, `gamma05`, or `sparse-rewards`; a new name preserves earlier
+results. Reusing a name overwrites its log and plot filenames.
+
+Create the run directory first. In PowerShell:
+
+```powershell
+New-Item -ItemType Directory -Force -Path output/lesson01/comparison | Out-Null
+```
+
+On macOS/Linux:
+
+```bash
+mkdir -p output/lesson01/comparison
+```
+
+Then save the command's printed results (works in either shell):
+
+```bash
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --plots output/lesson01/comparison/plots > output/lesson01/comparison/run.log
+```
+
+Omit `--plots` for text-only runs. Redirection saves standard output instead of
+displaying it. Errors remain visible in the terminal. See [output conventions](output/README.md)
+for commands for all four lessons and how to display results while saving them.
+Generated logs and images are excluded from Git.
 
 ## Project layout
 
@@ -112,7 +142,7 @@ The program compares fixed policies; it does not train an agent yet.
 - `docs/lessons/`: theory, usage tutorials, exercises, and their solutions.
 - `docs/flashcards/`: study flashcards.
 - `tests/`: numeric, CLI, and optional plotting checks.
-- `outputs/`: generated experiment results (ignored by Git).
+- `output/`: generated command logs and plots, grouped by lesson and run. Only its README is tracked.
 - `scratch/`: local copies of standalone solution programs (ignored by Git).
 
 Start with the [Lesson 1 theory](docs/lessons/RL-lesson-01-rl-foundations-01.md)

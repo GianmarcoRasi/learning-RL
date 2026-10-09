@@ -16,6 +16,25 @@ For Lesson 1 plots, use `python -m pip install -e ".[plots]"`. Text runs require
 
 The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
 
+### Save this lesson's results
+
+Group experiments under `output/lesson02/RUN_NAME/`. Create a run directory
+before redirecting output. For example, in PowerShell:
+
+```powershell
+New-Item -ItemType Directory -Force -Path output/lesson02/comparison | Out-Null
+```
+
+On macOS/Linux, use `mkdir -p output/lesson02/comparison`. Save a comparison log:
+
+```bash
+python -m learning_rl.lessons.lesson02 --method compare --episodes 10000 --seed 7 > output/lesson02/comparison/run.log
+```
+
+Redirection saves printed output; it does not display it. Use a new run name when
+changing settings to preserve the previous result. See [output conventions](../../output/README.md)
+for displaying and saving simultaneously.
+
 ## 1. Practical lab --- Estimate values from experience
 
 We can calculate values from a known model, or estimate them by observing what happens. Think of estimating the value of a delivery strategy using either a complete route-and-traffic model or a log of completed trips.

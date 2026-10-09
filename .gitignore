@@ -4,6 +4,8 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+output/*
+!output/README.md
 outputs/
 plots/
 lesson01/plots/

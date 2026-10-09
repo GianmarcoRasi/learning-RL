@@ -16,6 +16,25 @@ For Lesson 1 plots, use `python -m pip install -e ".[plots]"`. Text runs require
 
 The walkthrough uses the supplied baseline program. Exercises and their solutions follow at the end. Solution code remains in this document: modification snippets apply to the linked lesson source; standalone solution programs can be saved under a local `scratch/` directory. Create that directory before saving a program there. It is excluded from version control.
 
+### Save this lesson's results
+
+Group experiments under `output/lesson01/RUN_NAME/`. Create a run directory
+before redirecting output. For example, in PowerShell:
+
+```powershell
+New-Item -ItemType Directory -Force -Path output/lesson01/comparison | Out-Null
+```
+
+On macOS/Linux, use `mkdir -p output/lesson01/comparison`. Save a comparison log:
+
+```bash
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet > output/lesson01/comparison/run.log
+```
+
+Redirection saves printed output; it does not display it. Use a new run name when
+changing settings to preserve the previous result. See [output conventions](../../output/README.md)
+for displaying and saving simultaneously. Add `--plots output/lesson01/comparison/plots` before the redirection to save the figures beside the log.
+
 ## 1. Guided tutorial — Explore LineWorld
 
 Imagine a courier walking along five numbered stops. Position $0$ is the depot, positions $1,2,3$ are intermediate stops, and position $4$ is the destination.
@@ -68,7 +87,7 @@ Install Matplotlib in the Python environment you use for this lab:
 
 ```bash
 python -m pip install -e ".[plots]"
-python -m learning_rl.lessons.lesson01 --compare --episodes 100 --seed 7 --quiet --plots outputs/lesson01/comparison
+python -m learning_rl.lessons.lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/comparison/plots
 ```
 
 `--plots DIRECTORY` saves PNG files without opening windows. Open the saved images in an image viewer. Each command uses the same filenames within its output directory, so use distinct directories for experiments you want to keep. Without `--plots`, Matplotlib is neither imported nor required.
@@ -122,8 +141,8 @@ Try each exercise before reading its solution. To use plots, install Matplotlib 
 #### 1. Compare policies and estimate stability
 
 ```bash
-python -m learning_rl.lessons.lesson01 --compare --episodes 100 --seed 7 --quiet --plots outputs/lesson01/100
-python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --plots outputs/lesson01/1000
+python -m learning_rl.lessons.lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/100/plots
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --plots output/lesson01/1000/plots
 ```
 
 Always-right takes four steps, earns total reward `7`, and has return `4.58` at the default discount, with success rate one. Random episodes have variable lengths and returns. More episodes generally give a more stable estimate; they do not train this fixed policy or guarantee a better mean. The running mean can still fluctuate.
@@ -133,7 +152,7 @@ Without a cutoff, the expected number of moves from position zero for a uniform 
 #### 2. Recognize truncation
 
 ```bash
-python -m learning_rl.lessons.lesson01 --policy right --max-steps 2 --trace --plots outputs/lesson01/cutoff
+python -m learning_rl.lessons.lesson01 --policy right --max-steps 2 --trace --plots output/lesson01/cutoff/plots
 ```
 
 The trajectory is $0\to1\to2$, with rewards $-1,-1$. Expect `steps=2`, `reward_sum=-2.000`, `return=-1.900`, `terminated=False`, `truncated=True`, and success rate zero. The trajectory ends with an X at position two, below the goal. The final cumulative reward is a partial sum, not an estimate of the unobserved continuation. Reaching position four requires four moves.
@@ -141,9 +160,9 @@ The trajectory is $0\to1\to2$, with rewards $-1,-1$. Expect `steps=2`, `reward_s
 #### 3. Change the discount
 
 ```bash
-python -m learning_rl.lessons.lesson01 --policy right --gamma 0 --trace --plots outputs/lesson01/gamma0
-python -m learning_rl.lessons.lesson01 --policy right --gamma 0.5 --trace --plots outputs/lesson01/gamma05
-python -m learning_rl.lessons.lesson01 --policy right --gamma 1 --trace --plots outputs/lesson01/gamma1
+python -m learning_rl.lessons.lesson01 --policy right --gamma 0 --trace --plots output/lesson01/gamma0/plots
+python -m learning_rl.lessons.lesson01 --policy right --gamma 0.5 --trace --plots output/lesson01/gamma05/plots
+python -m learning_rl.lessons.lesson01 --policy right --gamma 1 --trace --plots output/lesson01/gamma1/plots
 ```
 
 Actions and states remain identical because this policy does not use the discount. For rewards $[-1,-1,-1,10]$, the returns are respectively $-1$, $-0.5$, and $7$. The reward sum remains $7$. The immediate reward panels match, but cumulative discounted reward changes. The discount plot rescales the same recorded rewards without resampling actions. With a random policy, keeping the same seed and all other arguments also preserves trajectories when only the discount changes.
@@ -151,9 +170,9 @@ Actions and states remain identical because this policy does not use the discoun
 #### 4. Change reward design
 
 ```bash
-python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward -1 --goal-reward 10 --plots outputs/lesson01/cost
-python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward 0 --goal-reward 1 --plots outputs/lesson01/sparse
-python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 0.9 --step-reward 0 --goal-reward 1 --plots outputs/lesson01/sparse-discounted
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward -1 --goal-reward 10 --plots output/lesson01/cost/plots
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 1 --step-reward 0 --goal-reward 1 --plots output/lesson01/sparse/plots
+python -m learning_rl.lessons.lesson01 --compare --episodes 1000 --seed 7 --quiet --gamma 0.9 --step-reward 0 --goal-reward 1 --plots output/lesson01/sparse-discounted/plots
 ```
 
 Always-right earns `7` with movement costs and `1` with sparse rewards at $\gamma=1$. For a successful trajectory of length $T$, the respective undiscounted returns are $11-T$ and $1$. The first rule favors shorter successful paths; the second gives all successes the same return. A truncated sparse-reward run earns zero, so its mean return at $\gamma=1$ equals its success rate. At $0<\gamma<1$, a successful sparse-reward trajectory has return $\gamma^{T-1}$, favoring earlier completion. Changing rewards or discount alone does not change either fixed policy's actions. Compare returns within each reward rule; their scales differ across rules.
@@ -195,10 +214,10 @@ Run separate experiments (omit `--plots` for tables only):
 
 ```bash
 python -m learning_rl.lessons.lesson01 --help
-python -m learning_rl.lessons.lesson01 --compare --right-prob 0 --episodes 1000 --quiet --plots outputs/lesson01/p0
-python -m learning_rl.lessons.lesson01 --compare --right-prob 0.5 --episodes 1000 --quiet --plots outputs/lesson01/p05
-python -m learning_rl.lessons.lesson01 --compare --right-prob 0.8 --episodes 1000 --quiet --plots outputs/lesson01/p08
-python -m learning_rl.lessons.lesson01 --compare --right-prob 1 --episodes 1000 --quiet --plots outputs/lesson01/p1
+python -m learning_rl.lessons.lesson01 --compare --right-prob 0 --episodes 1000 --quiet --plots output/lesson01/p0/plots
+python -m learning_rl.lessons.lesson01 --compare --right-prob 0.5 --episodes 1000 --quiet --plots output/lesson01/p05/plots
+python -m learning_rl.lessons.lesson01 --compare --right-prob 0.8 --episodes 1000 --quiet --plots output/lesson01/p08/plots
+python -m learning_rl.lessons.lesson01 --compare --right-prob 1 --episodes 1000 --quiet --plots output/lesson01/p1/plots
 ```
 
 Probability one reproduces the four-step right trajectory; probability zero stays at position zero and truncates. Probability 0.8 should generally shorten episodes relative to 0.5. The probability affects only the random policy, including when invoked through `--compare`. Existing plot and table functions consume the same episode records and need no changes. Using `rng.random()` instead of `rng.randrange(2)` changes the seeded draw sequence, so the extension need not reproduce the original random trajectories even at probability 0.5.
