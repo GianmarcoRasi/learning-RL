@@ -73,10 +73,40 @@ Before running the program, predict how many transitions it takes to finish and 
 
 ### Run from your terminal
 
-First inspect the CLI, then run one traced episode and a batch comparison:
-
 ```bash
 RL lesson01 --help
+```
+
+All options are optional. An option that takes a value requires that value when supplied. Flags take no value.
+
+| Option | Required | Values | Role |
+| --- | --- | --- | --- |
+| `-h`, `--help` | optional | No value; flag. | Display help and exit. |
+| `--policy` | optional | Placeholder: `POLICY`; one [registered policy](#registered-policy-values). Default: `right`. | Select the fixed policy. |
+| `--size` | optional | Placeholder: `SIZE`; integer ≥ 2. Default: `5`. | Number of positions, including start and goal. |
+| `--episodes` | optional | Placeholder: `EPISODES`; integer ≥ 1. Default: `1`. | Episodes to run per policy. |
+| `--max-steps` | optional | Placeholder: `MAX_STEPS`; integer ≥ 1. Default: `100`. | Maximum transitions per episode before truncation. |
+| `--gamma` | optional | Placeholder: `GAMMA`; finite real number in [0, 1], dimensionless. Default: `0.9`. | Discount factor used to calculate returns. |
+| `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Seed for reproducible random actions. |
+| `--step-reward` | optional | Placeholder: `STEP_REWARD`; finite real number. Default: `-1`. | Reward for transitions that do not enter the goal. |
+| `--goal-reward` | optional | Placeholder: `GOAL_REWARD`; finite real number. Default: `10`. | Reward for entering the goal. |
+| `--trace` | optional | No value; flag. Default: disabled. | Print every recorded transition. |
+| `--quiet` | optional | No value; flag. Default: disabled. | Suppress episode summaries; retain the final table and any requested trace. |
+| `--compare` | optional | No value; flag. Default: disabled. | Run both registered policies; override `--policy`. |
+| `--plots` | optional | Placeholder: `PLOTS_DIRECTORY`; relative or absolute directory path. Default: no plots. | Save PNG plots in this directory, creating it if needed. |
+| `--plot-episodes` | optional | Placeholder: `PLOT_EPISODES`; integer ≥ 1. Default: `3`. | Maximum episodes per policy for individual trajectory and reward plots; used with `--plots`. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson01/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
+
+#### Registered policy values
+
+| Value of `POLICY` | Role |
+| --- | --- |
+| `right` | Always move right toward the goal. |
+| `random` | Choose left or right with equal probability at each step. |
+
+Run one traced episode and a batch comparison:
+
+```bash
 RL lesson01 --policy right --trace
 RL lesson01 --compare --episodes 100 --seed 7 --quiet
 ```
