@@ -151,13 +151,13 @@ RL lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/co
 
 `--plots DIRECTORY` saves PNG files without opening windows. Open the saved images in an image viewer. Each command uses the same filenames within its output directory, so use distinct directories for experiments you want to keep. Without `--plots`, the command produces text output only.
 
-| Function | Saved file | What to inspect |
+| Plot | Saved file | What to inspect |
 | --- | --- | --- |
-| `plot_trajectory(episode, goal, label)` | `right-1-trajectory.png`, etc. | Position against decision step, including initial state $S_0$. A star marks termination; an X marks truncation. The dashed line is the goal. |
-| `plot_rewards(episode, gamma, label)` | `right-1-rewards.png`, etc. | Immediate rewards and cumulative discounted reward in separate panels. |
-| `plot_comparison(experiments, gamma)` | `comparison.png` | Box plots of recorded returns and lengths, and bars for success rates. The title includes truncation counts. |
-| `plot_discount(episode)` | `right-1-discount.png`, etc. | The same recorded trajectory scored at discounts from zero to one. |
-| `plot_running_mean(experiments, gamma)` | `running-mean.png` | Running estimates of each fixed policy's mean recorded return. This is not a learning curve. |
+| Episode trajectory | `right-1-trajectory.png`, etc. | Position against decision step, including initial state $S_0$. A star marks termination; an X marks truncation. The dashed line is the goal. |
+| Rewards and cumulative discounted reward | `right-1-rewards.png`, etc. | Immediate rewards and cumulative discounted reward in separate panels. |
+| Policy comparison | `comparison.png` | Box plots of recorded returns and lengths, and bars for success rates. The title includes truncation counts. |
+| Return by discount factor | `right-1-discount.png`, etc. | The same recorded trajectory scored at discounts from zero to one. |
+| Running mean return | `running-mean.png` | Running estimates of each fixed policy's mean recorded return. This is not a learning curve. |
 
 By default, trajectory and reward plots are saved for the first three episodes per policy. `--plot-episodes 1` limits these to the first episode. The discount plot always uses the first episode; comparison and running-mean plots use every episode. An experiment is a dictionary mapping policy labels to lists of `Episode` records. Each record contains states, actions, rewards, and termination status. Plot functions return a Matplotlib figure, so they can also be called directly from Python; close the figure after saving it.
 
