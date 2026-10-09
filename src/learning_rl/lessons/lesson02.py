@@ -7,14 +7,15 @@ from learning_rl.environments.lineworld import transition
 
 
 def evaluate(size, gamma, right_prob, theta, max_iterations):
+    """Compute state values with synchronous policy evaluation sweeps."""
     values = [0.0] * size
     for iteration in range(1, max_iterations + 1):
         new = values.copy()
         for state in range(size - 1):
             new[state] = 0.0
             for action, prob in [(0, 1 - right_prob), (1, right_prob)]:
-                nxt, reward, done = transition(state, action, size)
-                new[state] += prob * (reward + gamma * (0.0 if done else values[nxt]))
+                next_state, reward, terminated = transition(state, action, size)
+                new[state] += prob * (reward + gamma * (0.0 if terminated else values[next_state]))
         delta = max(abs(a - b) for a, b in zip(new, values))
         values = new
         if delta < theta:
@@ -23,21 +24,22 @@ def evaluate(size, gamma, right_prob, theta, max_iterations):
 
 
 def sample(size, gamma, right_prob, episodes, max_steps, rng):
+    """Estimate state values with every-visit Monte Carlo suffix returns."""
     sums = [0.0] * size
     counts = [0] * size
     truncated = 0
     for _ in range(episodes):
         state = 0
         trajectory = []
-        done = False
+        terminated = False
         for _ in range(max_steps):
             action = int(rng.random() < right_prob)
-            nxt, reward, done = transition(state, action, size)
+            next_state, reward, terminated = transition(state, action, size)
             trajectory.append((state, reward))
-            state = nxt
-            if done:
+            state = next_state
+            if terminated:
                 break
-        truncated += int(not done)
+        truncated += int(not terminated)
         # Every-visit MC: each visit contributes its observed suffix return.
         # A truncated suffix is deliberately assigned zero continuation here.
         G = 0.0
@@ -50,7 +52,7 @@ def sample(size, gamma, right_prob, episodes, max_steps, rng):
     return values, counts, truncated
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description="Estimate or compute LineWorld policy values.")
     parser.add_argument("--method", choices=["mc", "dp", "compare"], default="compare")
     parser.add_argument("--size", type=int, default=5)
@@ -62,7 +64,7 @@ def main():
     parser.add_argument("--max-iterations", type=int, default=100000)
     parser.add_argument("--seed", type=int, default=7)
     add_output_argument(parser)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.size < 2 or min(args.episodes, args.max_steps, args.max_iterations) < 1:
         parser.error("size >= 2 and positive count arguments required")
     if not 0 <= args.gamma < 1 or not 0 <= args.right_prob <= 1 or not args.theta > 0:

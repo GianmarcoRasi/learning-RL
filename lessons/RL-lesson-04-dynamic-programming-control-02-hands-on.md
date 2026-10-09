@@ -1,5 +1,7 @@
 # Lesson 4 — Improving Policies with Dynamic Programming — Version 2 — Hands-on (Python)
 
+> **Vocabulary:** Use the [project glossary](../docs/glossary.md) for the terms and notation shared by all lessons and code.
+
 > **Concepts and theoretical exercises:** [RL-lesson-04-dynamic-programming-control](RL-lesson-04-dynamic-programming-control-01.md)  
 > **Study pace:** Allow 45–75 minutes for the experiment lab and practical exercises.
 >
@@ -7,7 +9,7 @@
 
 ## Setup and commands
 
-Run every command in this tutorial from the **repository root**. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
+After installation, run lesson commands from any directory with the project virtual environment activated. Relative output paths are resolved from your current directory. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. No source edits or new programs are required. Exercises and solutions follow at the end.
 
@@ -49,11 +51,11 @@ The CLI compares algorithms and varies route length, discount and tolerance. It 
 ### Terminal commands
 
 ```bash
-python -m learning_rl.lessons.lesson04 --help
-python -m learning_rl.lessons.lesson04 --algorithm both
-python -m learning_rl.lessons.lesson04 --algorithm policy --gamma 0.5
-python -m learning_rl.lessons.lesson04 --algorithm value --size 20 --gamma 0.99
-python -m learning_rl.lessons.lesson04 --algorithm both --theta 0.000001
+python -m RL lesson04 --help
+python -m RL lesson04 --algorithm both
+python -m RL lesson04 --algorithm policy --gamma 0.5
+python -m RL lesson04 --algorithm value --size 20 --gamma 0.99
+python -m RL lesson04 --algorithm both --theta 0.000001
 ```
 
 For the default run, both algorithms should report approximately:
@@ -131,9 +133,9 @@ Use the supplied CLI with `--size 20 --algorithm both` at discounts `0.5` and `0
 #### 1. Compare propagation distances
 
 ```bash
-python -m learning_rl.lessons.lesson04 --algorithm value --size 3
-python -m learning_rl.lessons.lesson04 --algorithm value --size 5
-python -m learning_rl.lessons.lesson04 --algorithm value --size 8
+python -m RL lesson04 --algorithm value --size 3
+python -m RL lesson04 --algorithm value --size 5
+python -m RL lesson04 --algorithm value --size 8
 ```
 
 | Size | Goal distance from state zero | Reported sweeps | State-zero value |
@@ -147,7 +149,7 @@ Synchronous backups propagate the goal reward one state per sweep. The final ext
 #### 2. Check the eight-state route
 
 ```bash
-python -m learning_rl.lessons.lesson04 --size 8 --gamma 0.9 --algorithm both
+python -m RL lesson04 --size 8 --gamma 0.9 --algorithm both
 ```
 
 Working backward from terminal value zero gives `[0.62882, 1.8098, 3.122, 4.58, 6.2, 8, 10, 0]`. Both algorithms should return these values within the tolerance and choose right at every nonterminal state. Each preceding value is $-1+0.9$ times the next value, except the goal-entry transition, which gives $10$ with zero continuation.
@@ -155,9 +157,9 @@ Working backward from terminal value zero gives `[0.62882, 1.8098, 3.122, 4.58, 
 #### 3. Compare work and residuals
 
 ```bash
-python -m learning_rl.lessons.lesson04 --algorithm both --gamma 0.5
-python -m learning_rl.lessons.lesson04 --algorithm both --gamma 0.9
-python -m learning_rl.lessons.lesson04 --algorithm both --gamma 0.99
+python -m RL lesson04 --algorithm both --gamma 0.5
+python -m RL lesson04 --algorithm both --gamma 0.9
+python -m RL lesson04 --algorithm both --gamma 0.99
 ```
 
 With the original five-state model, random initial policy, zero initial evaluation values and tolerance $10^{-10}$, the reference results are:
@@ -173,9 +175,9 @@ Policy evaluation takes more sweeps here as the discount increases. Value iterat
 #### 4. Compare tolerances
 
 ```bash
-python -m learning_rl.lessons.lesson04 --algorithm both --size 8 --gamma 0.99 --theta 0.01
-python -m learning_rl.lessons.lesson04 --algorithm both --size 8 --gamma 0.99 --theta 0.000001
-python -m learning_rl.lessons.lesson04 --algorithm both --size 8 --gamma 0.99 --theta 0.0000000001
+python -m RL lesson04 --algorithm both --size 8 --gamma 0.99 --theta 0.01
+python -m RL lesson04 --algorithm both --size 8 --gamma 0.99 --theta 0.000001
+python -m RL lesson04 --algorithm both --size 8 --gamma 0.99 --theta 0.0000000001
 ```
 
 Copy each algorithm's rounds, sweeps, residual and state-zero value into a table. Divide each printed residual by `0.01` for its value-error bound, allowing for output rounding. Evaluation work can change with tolerance. Once the all-right policy is selected, its acyclic route can propagate exact values in finitely many sweeps; all three tolerances can therefore produce the same final values and zero printed residual. Zero printed residual describes the computed result, not a general exact-arithmetic guarantee.
@@ -183,8 +185,8 @@ Copy each algorithm's rounds, sweeps, residual and state-zero value into a table
 #### 5. Inspect immediate-reward ties
 
 ```bash
-python -m learning_rl.lessons.lesson04 --algorithm both --gamma 0
-python -m learning_rl.lessons.lesson04 --algorithm both --gamma 0.9
+python -m RL lesson04 --algorithm both --gamma 0
+python -m RL lesson04 --algorithm both --gamma 0.9
 ```
 
 At zero discount both algorithms report `[-1, -1, -1, 10, 0]`, with left at states zero through two and right at state three. Away from the goal, both actions have immediate reward `-1`; the stable tie rule chooses left. At discount `0.9`, both report `[4.58, 6.2, 8, 10, 0]` with right at every nonterminal state. Zero discount ignores all delayed rewards, so an optimal policy for that objective need not reach the goal.
@@ -192,8 +194,8 @@ At zero discount both algorithms report `[-1, -1, -1, 10, 0]`, with left at stat
 ### Solution - Evaluate a longer route
 
 ```bash
-python -m learning_rl.lessons.lesson04 --size 20 --algorithm both --gamma 0.5
-python -m learning_rl.lessons.lesson04 --size 20 --algorithm both --gamma 0.99
+python -m RL lesson04 --size 20 --algorithm both --gamma 0.5
+python -m RL lesson04 --size 20 --algorithm both --gamma 0.99
 ```
 
 State zero is 19 moves from the goal. Substitute $d=19$ into the distance formula and compare with each printed value. Both algorithms choose right at every nonterminal state and should agree within numerical tolerance. At discount `0.5`, state-zero value is approximately `-1.999954`; at `0.99`, it is approximately `-8.203486`. The latter objective counts more of the 18 movement costs as well as more of the delayed goal reward, so a larger discount does not necessarily raise return. Moving left delays completion and adds costs; a negative optimal value does not make left better. Report the measured residuals alongside the state tables.

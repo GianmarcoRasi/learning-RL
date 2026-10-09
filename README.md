@@ -9,7 +9,7 @@ value functions and the Bellman equation, multi-armed bandits, and dynamic progr
 - The text-based labs use only the Python standard library.
 - **Matplotlib** is installed by default for plotting throughout the course. Lesson 1 currently provides PNG plot commands.
 
-Run the setup and example commands below from the project root (`learning-RL`).
+Run setup commands from the project root (`learning-RL`). After installation, lesson commands work from any directory in the activated environment.
 
 ## Create a local virtual environment
 
@@ -76,6 +76,37 @@ The `pyproject.toml` declares Python support and default dependencies. This setu
 prepares the environment for plotting in current and subsequent lessons. Plot
 files are generated only when requested by a lesson command.
 
+## Run a lesson
+
+After installation, use the project command:
+
+```bash
+RL --help
+RL lesson01 --policy right --trace
+```
+
+The equivalent Python module command works with the same arguments:
+
+```bash
+python -m RL lesson01 --policy right --trace
+python -m RL lesson02 --method dp --right-prob 1
+python -m RL lesson03 --runs 1 --steps 20
+python -m RL lesson04 --algorithm both
+```
+
+Use `lesson01` through `lesson04`; append `--help` to see each lesson's arguments.
+Python uses `-m` to run an installed package, so the form is `python -m RL`,
+rather than `python RL`. `python -m learning_rl` and the existing individual
+lesson module commands also remain available. Relative log and plot paths are
+resolved from the directory where you run the command.
+
+## Shared vocabulary
+
+The [project glossary](docs/glossary.md) collects the defined terms and notation
+from all four lessons and maps them to code and command output. Use these meanings
+consistently in lesson explanations, code names, docstrings, help, and plots.
+When a lesson introduces a term, add its definition and lesson reference to the glossary.
+
 ## Project layout
 
 - `src/learning_rl/lessons/`: runnable labs for Lessons 1–4.
@@ -90,7 +121,7 @@ Start with the [Lesson 1 theory](lessons/RL-lesson-01-rl-foundations-01.md)
 and its [hands-on tutorial](lessons/RL-lesson-01-rl-foundations-02-hands-on.md).
 The tutorials link to source files and show commands. Hands-on exercises use the
 supplied code and ask for specific outputs and interpretations; they never require
-source edits or new programs. Solutions remain in those tutorials. Run all examples from the repository root after installing the course.
+source edits or new programs. Solutions remain in those tutorials. Run lesson examples from any directory after installing the course and activating its environment.
 
 ## Check the code
 

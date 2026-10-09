@@ -6,8 +6,9 @@ from learning_rl.environments.lineworld import transition
 
 
 def action_value(state, action, values, size, gamma):
-    nxt, reward, done = transition(state, action, size)
-    return reward + gamma * (0.0 if done else values[nxt])
+    """Compute one-step lookahead Q_V using the supplied state-value table."""
+    next_state, reward, terminated = transition(state, action, size)
+    return reward + gamma * (0.0 if terminated else values[next_state])
 
 
 def greedy(state, values, size, gamma):
@@ -17,6 +18,7 @@ def greedy(state, values, size, gamma):
 
 
 def evaluate(policy, size, gamma, theta, max_iterations):
+    """Evaluate the fixed policy with synchronous Bellman expectation sweeps."""
     values = [0.0] * size
     for iteration in range(1, max_iterations + 1):
         new = values.copy()
@@ -32,6 +34,7 @@ def evaluate(policy, size, gamma, theta, max_iterations):
 
 
 def policy_iteration(size, gamma, theta, max_iterations):
+    """Alternate policy evaluation and greedy policy improvement."""
     policy = [0.5] * (size - 1)
     sweeps = 0
     for round_number in range(1, max_iterations + 1):
@@ -45,6 +48,7 @@ def policy_iteration(size, gamma, theta, max_iterations):
 
 
 def value_iteration(size, gamma, theta, max_iterations):
+    """Perform synchronous optimality sweeps, then extract a greedy policy."""
     values = [0.0] * size
     for iteration in range(1, max_iterations + 1):
         new = values.copy()
@@ -58,7 +62,7 @@ def value_iteration(size, gamma, theta, max_iterations):
     raise RuntimeError("Value iteration did not converge")
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description="Find optimal LineWorld policies with DP.")
     parser.add_argument("--algorithm", choices=["policy", "value", "both"], default="both")
     parser.add_argument("--size", type=int, default=5)
@@ -66,7 +70,7 @@ def main():
     parser.add_argument("--theta", type=float, default=1e-10)
     parser.add_argument("--max-iterations", type=int, default=100000)
     add_output_argument(parser)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.size < 2 or args.max_iterations < 1:
         parser.error("size >= 2 and max-iterations >= 1 required")
     if not 0 <= args.gamma < 1 or not args.theta > 0:

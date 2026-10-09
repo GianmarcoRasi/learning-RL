@@ -16,6 +16,7 @@ from learning_rl.plotting.lesson01 import (
 
 @dataclass
 class Episode:
+    """Recorded trajectory; truncation excludes unobserved continuation."""
     states: list[int]  # Includes S_0: one more state than rewards.
     actions: list[int]
     rewards: list[float]
@@ -26,6 +27,7 @@ class Episode:
         return not self.terminated
 
     def discounted_return(self, gamma):
+        """Return the recorded return, not a policy's expected state value."""
         return sum(gamma ** t * r for t, r in enumerate(self.rewards))
 
 
@@ -57,7 +59,7 @@ def print_summary(experiments, gamma):
     print("reward_sum, return and steps are means over all recorded episodes.")
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description="Run and compare fixed LineWorld policies.")
     parser.add_argument("--policy", choices=["right", "random"], default="right")
     parser.add_argument("--size", type=int, default=5)
@@ -74,7 +76,7 @@ def main():
     parser.add_argument("--plot-episodes", type=int, default=3,
                         help="Episodes per policy to plot individually (default: 3).")
     add_output_argument(parser)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.size < 2 or args.episodes < 1 or args.max_steps < 1 or args.plot_episodes < 1:
         parser.error("size >= 2; episodes, max-steps and plot-episodes >= 1 required")
     if not 0 <= args.gamma <= 1:

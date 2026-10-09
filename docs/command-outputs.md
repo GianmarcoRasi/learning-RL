@@ -1,6 +1,6 @@
 # Command outputs
 
-Run lesson commands from the repository root after following the
+Run lesson commands from any directory in the activated project environment after following the
 [environment setup](../README.md#create-a-local-virtual-environment) and
 [package installation instructions](../README.md#install-packages).
 
@@ -33,10 +33,10 @@ Add `--output-dir PATH` to a lesson command to choose where its `run.log` is sav
 The program creates the directory automatically:
 
 ```bash
-python -m learning_rl.lessons.lesson01 --output-dir output/lesson01/my-run
-python -m learning_rl.lessons.lesson02 --output-dir output/lesson02/my-run
-python -m learning_rl.lessons.lesson03 --output-dir output/lesson03/my-run
-python -m learning_rl.lessons.lesson04 --output-dir output/lesson04/my-run
+python -m RL lesson01 --output-dir output/lesson01/my-run
+python -m RL lesson02 --output-dir output/lesson02/my-run
+python -m RL lesson03 --output-dir output/lesson03/my-run
+python -m RL lesson04 --output-dir output/lesson04/my-run
 ```
 
 Use distinct names for different settings. Reusing a directory overwrites `run.log`.

@@ -6,12 +6,17 @@ from learning_rl.lessons.output import add_output_argument, lesson_output
 
 
 def experiment(means, steps, epsilon, initial, seed, run):
+    """Learn arm values using epsilon-greedy and sample-average updates.
+
+    True means are used for reward generation and pseudo-regret evaluation,
+    never for action selection. Each step is one bandit pull.
+    """
     # Separate streams: reward noise is independent of action-selection draws.
     actions_rng = random.Random(seed + 2 * run)
     rewards_rng = random.Random(seed + 2 * run + 1)
     estimates = [initial] * len(means)
     counts = [0] * len(means)
-    reward_sum = regret = 0.0
+    reward_sum = pseudo_regret = 0.0
     optimal_count = 0
     best = max(means)
     for _ in range(steps):
@@ -25,12 +30,12 @@ def experiment(means, steps, epsilon, initial, seed, run):
         counts[action] += 1
         estimates[action] += (reward - estimates[action]) / counts[action]
         reward_sum += reward
-        regret += best - means[action]
+        pseudo_regret += best - means[action]
         optimal_count += int(means[action] == best)
-    return reward_sum / steps, regret, optimal_count / steps, estimates, counts
+    return reward_sum / steps, pseudo_regret, optimal_count / steps, estimates, counts
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description="Compare epsilon-greedy Gaussian bandits.")
     parser.add_argument("--means", type=float, nargs="+", default=[0.0, 0.2, 1.0])
     parser.add_argument("--epsilons", type=float, nargs="+", default=[0.0, 0.1, 1.0])
@@ -39,7 +44,7 @@ def main():
     parser.add_argument("--initial", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=7)
     add_output_argument(parser)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     import math
     if args.steps < 1 or args.runs < 1:
         parser.error("steps and runs must be positive")

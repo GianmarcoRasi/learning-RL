@@ -6,6 +6,8 @@ import io
 import os
 import random
 import sys
+import subprocess
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +15,7 @@ from unittest.mock import patch
 
 from learning_rl.environments.lineworld import LineWorld, transition
 from learning_rl.lessons import lesson01, lesson02, lesson03, lesson04
+from learning_rl import cli
 
 
 @contextlib.contextmanager
@@ -27,6 +30,52 @@ def temporary_working_directory():
 
 
 class LessonChecks(unittest.TestCase):
+    def test_project_dispatch_forwards_lesson_arguments(self):
+        examples = [("lesson01", ["--quiet"], "4.580"),
+                    ("lesson02", ["--method", "dp", "--right-prob", "1"], "4.580000"),
+                    ("lesson03", ["--runs", "1", "--steps", "20"], "mean_pseudo_regret"),
+                    ("lesson04", ["--algorithm", "both"], "residual=")]
+        with temporary_working_directory():
+            for name, arguments, expected in examples:
+                with self.subTest(lesson=name):
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        cli.main([name] + arguments)
+                    self.assertIn(expected, output.getvalue())
+                    self.assertTrue(list((Path("output") / name).glob("*/run.log")))
+                    with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit) as caught:
+                        cli.main([name, "--help"])
+                    self.assertEqual(caught.exception.code, 0)
+
+    def test_project_module_entry_points_outside_repository(self):
+        # Use the installed package, without injecting repository paths.
+        with temporary_working_directory():
+            for module in ("RL", "learning_rl"):
+                result = subprocess.run(
+                    [sys.executable, "-m", module, "lesson01", "--quiet"],
+                    capture_output=True, text=True, check=True,
+                )
+                self.assertIn("4.580", result.stdout)
+            command = shutil.which("RL", path=str(Path(sys.executable).parent))
+            self.assertIsNotNone(command, "Install the project to create the RL command")
+            result = subprocess.run(
+                [command, "lesson01", "--quiet"],
+                capture_output=True, text=True, check=True,
+            )
+            self.assertIn("4.580", result.stdout)
+
+    def test_project_help_and_invalid_arguments_do_not_create_logs(self):
+        with temporary_working_directory():
+            for arguments, expected_code in [(["--help"], 0), ([], 2),
+                                              (["lesson99"], 2),
+                                              (["lesson01", "--unknown"], 2)]:
+                with self.subTest(arguments=arguments), \
+                     contextlib.redirect_stdout(io.StringIO()), \
+                     contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as caught:
+                    cli.main(arguments)
+                self.assertEqual(caught.exception.code, expected_code)
+                self.assertFalse(Path("output").exists())
+
     def test_shared_model_and_goal_reward(self):
         env = LineWorld()
         self.assertEqual(env.step(0), (0, -1.0, False))

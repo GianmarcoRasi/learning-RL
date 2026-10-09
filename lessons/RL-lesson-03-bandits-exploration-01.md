@@ -1,5 +1,7 @@
 # Lesson 3 — Multi-Armed Bandits: Exploration and Exploitation — Version 2
 
+> **Vocabulary:** Use the [project glossary](../docs/glossary.md) for the terms and notation shared by all lessons and code.
+
 > **Version 2 — Expanded explanations and worked practical examples.**  
 > Read each concept in words, then follow its numbers through the equation. The progressive theoretical exercises are retained here; the command-line labs and practical exercises are in the companion hands-on file.  
 > **Study pace:** Allow 75–100 minutes for explanations and worked examples. The progressive theory sequence can be a separate 60–90 minute session.

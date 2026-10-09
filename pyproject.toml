@@ -9,5 +9,8 @@ description = "Runnable reinforcement learning course labs"
 requires-python = ">=3.10"
 dependencies = ["matplotlib>=3.5"]
 
+[project.scripts]
+RL = "learning_rl.cli:main"
+
 [tool.setuptools.packages.find]
 where = ["src"]
