@@ -69,7 +69,7 @@ def main(argv=None, *, prog=None):
         parser.error("size >= 2 and positive count arguments required")
     if not 0 <= args.gamma < 1 or not 0 <= args.right_prob <= 1 or not args.theta > 0:
         parser.error("gamma in [0, 1), right-prob in [0, 1], theta > 0 required")
-    with lesson_output("lesson02", args.output_dir) as directory:
+    with lesson_output("lesson02", args.output_dir, verbose=args.verbose) as directory:
         rows = []
         if args.method in ("dp", "compare"):
             values, iterations = evaluate(args.size, args.gamma, args.right_prob,

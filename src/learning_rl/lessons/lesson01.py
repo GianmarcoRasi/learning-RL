@@ -97,7 +97,7 @@ def main(argv=None, *, prog=None):
             plotting()
         except ImportError:
             parser.error("Plotting requires Matplotlib: python -m pip install matplotlib")
-    with lesson_output("lesson01", args.output_dir) as directory:
+    with lesson_output("lesson01", args.output_dir, verbose=args.verbose) as directory:
         experiments = {}
         for policy in (["right", "random"] if args.compare else [args.policy]):
             rng = random.Random(args.seed)

@@ -75,7 +75,7 @@ def main(argv=None, *, prog=None):
         parser.error("size >= 2 and max-iterations >= 1 required")
     if not 0 <= args.gamma < 1 or not args.theta > 0:
         parser.error("gamma in [0, 1) and theta > 0 required")
-    with lesson_output("lesson04", args.output_dir) as directory:
+    with lesson_output("lesson04", args.output_dir, verbose=args.verbose) as directory:
         rows = []
         for name, algorithm in [("policy", policy_iteration), ("value", value_iteration)]:
             if args.algorithm not in (name, "both"):

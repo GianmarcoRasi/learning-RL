@@ -31,6 +31,42 @@ def temporary_working_directory():
 
 
 class LessonChecks(unittest.TestCase):
+    def test_file_only_default_and_verbose_preserve_saved_results(self):
+        examples = [
+            (lesson01, [], "success_rate", "episode=1 steps=4"),
+            (lesson01, ["--trace", "--quiet"], "success_rate", "next_state=4 reward=10"),
+            (lesson02, ["--method", "mc", "--right-prob", "0", "--episodes", "1",
+                        "--max-steps", "1"], "mc_value=", "WARNING: zero continuation"),
+            (lesson03, ["--runs", "1", "--steps", "20"], "mean_reward=", "counts="),
+            (lesson04, ["--algorithm", "both"], "action=", "Summary saved to"),
+        ]
+        with tempfile.TemporaryDirectory() as temporary:
+            for module, arguments, table_marker, log_marker in examples:
+                with self.subTest(lesson=module.__name__):
+                    directory = Path(temporary) / module.__name__.rsplit(".", 1)[-1]
+                    saved = None
+                    for verbose in (False, True):
+                        output, errors = io.StringIO(), io.StringIO()
+                        options = arguments + ["--output-dir", str(directory)]
+                        if verbose:
+                            options.append("--verbose")
+                        with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                            cli.main([directory.name] + options)
+                            self.assertIs(sys.stdout, output)
+                        log = (directory / "run.log").read_text(encoding="utf-8")
+                        csv_text = (directory / "summary.csv").read_text(encoding="utf-8")
+                        self.assertIn(log_marker, log)
+                        self.assertNotIn(table_marker, log)
+                        if verbose:
+                            self.assertIn(table_marker, output.getvalue())
+                            self.assertIn(log_marker, output.getvalue())
+                            self.assertIn("Output saved to", errors.getvalue())
+                            self.assertEqual((log, csv_text), saved)
+                        else:
+                            self.assertEqual(output.getvalue(), "")
+                            self.assertEqual(errors.getvalue(), "")
+                            saved = (log, csv_text)
+
     def test_csv_summary_values_and_overwrite(self):
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
@@ -98,7 +134,7 @@ class LessonChecks(unittest.TestCase):
                 with self.subTest(lesson=name):
                     output = io.StringIO()
                     with contextlib.redirect_stdout(output):
-                        cli.main([name] + arguments)
+                        cli.main([name] + arguments + ["--verbose"])
                     self.assertIn(expected, output.getvalue())
                     self.assertTrue(list((Path("output") / name).glob("*/run.log")))
                     with contextlib.redirect_stdout(io.StringIO()), self.assertRaises(SystemExit) as caught:
@@ -109,18 +145,26 @@ class LessonChecks(unittest.TestCase):
         # Use the installed package, without injecting repository paths.
         with temporary_working_directory():
             for module in ("RL", "learning_rl"):
-                result = subprocess.run(
-                    [sys.executable, "-m", module, "lesson01", "--quiet"],
-                    capture_output=True, text=True, check=True,
-                )
-                self.assertIn("4.580", result.stdout)
+                for options in ([], ["--verbose"]):
+                    result = subprocess.run(
+                        [sys.executable, "-m", module, "lesson01", "--quiet"] + options,
+                        capture_output=True, text=True, check=True,
+                    )
+                    if options:
+                        self.assertIn("4.580", result.stdout)
+                    else:
+                        self.assertEqual(result.stdout, "")
             command = shutil.which("RL", path=str(Path(sys.executable).parent))
             self.assertIsNotNone(command, "Install the project to create the RL command")
-            result = subprocess.run(
-                [command, "lesson01", "--quiet"],
-                capture_output=True, text=True, check=True,
-            )
-            self.assertIn("4.580", result.stdout)
+            for options in ([], ["--verbose"]):
+                result = subprocess.run(
+                    [command, "lesson01", "--quiet"] + options,
+                    capture_output=True, text=True, check=True,
+                )
+                if options:
+                    self.assertIn("4.580", result.stdout)
+                else:
+                    self.assertEqual(result.stdout, "")
 
     def test_project_help_and_invalid_arguments_do_not_create_logs(self):
         with temporary_working_directory():
@@ -208,7 +252,7 @@ class LessonChecks(unittest.TestCase):
                 self.assertEqual(exit.exception.code, 0)
                 self.assertIn("usage:", output.getvalue())
                 output = io.StringIO()
-                with patch.object(sys, "argv", [module.__name__] + arguments), \
+                with patch.object(sys, "argv", [module.__name__] + arguments + ["--verbose"]), \
                      contextlib.redirect_stdout(output):
                     module.main()
                 self.assertIn(expected, output.getvalue())
@@ -228,7 +272,7 @@ class LessonChecks(unittest.TestCase):
                     self.assertFalse(root.exists())
                     for _ in range(2):
                         output = io.StringIO()
-                        with patch.object(sys, "argv", [module.__name__] + arguments), \
+                        with patch.object(sys, "argv", [module.__name__] + arguments + ["--verbose"]), \
                              contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
                             module.main()
                         logs = [log.read_text(encoding="utf-8") for log in root.glob("*/run.log")]
@@ -239,7 +283,7 @@ class LessonChecks(unittest.TestCase):
                     self.assertEqual(len(list(root.glob("*/summary.csv"))), 2)
                     output = io.StringIO()
                     with patch.object(sys, "argv", [module.__name__] + arguments +
-                                      ["--output-dir", str(root / "custom")]), \
+                                      ["--output-dir", str(root / "custom"), "--verbose"]), \
                          contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
                         module.main()
                     log = (root / "custom/run.log").read_text(encoding="utf-8")
@@ -284,10 +328,13 @@ class PlotChecks(unittest.TestCase):
             for i, fig in enumerate(figures):
                 fig.savefig(Path(output) / f"plot-{i}.png")
                 plots.plotting().close(fig)
+            terminal, errors = io.StringIO(), io.StringIO()
             with patch.object(sys, "argv", ["lesson01", "--compare", "--episodes", "2",
                                             "--quiet", "--plot-episodes", "1", "--plots", output]), \
-                 contextlib.redirect_stdout(io.StringIO()):
+                 contextlib.redirect_stdout(terminal), contextlib.redirect_stderr(errors):
                 lesson01.main()
+            self.assertEqual(terminal.getvalue(), "")
+            self.assertEqual(errors.getvalue(), "")
             self.assertEqual(len(list(Path(output).glob("*.png"))), 13)
         self.assertFalse(plots.plotting().get_fignums())
 

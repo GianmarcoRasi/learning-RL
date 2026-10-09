@@ -31,6 +31,7 @@ All options are optional. An option that takes a value requires that value when 
 | `--theta` | optional | Placeholder: `THETA`; real number > 0. Default: `1e-10`. | Stop DP evaluation when the largest value change in a sweep is below this tolerance. |
 | `--max-iterations` | optional | Placeholder: `MAX_ITERATIONS`; integer ≥ 1. Default: `100000`. | Maximum DP evaluation sweeps before reporting failure to converge. |
 | `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Seed for reproducible MC sampling. |
+| `--verbose` | optional | No value; flag. Default: disabled. | Also display output and summary tables in the terminal. |
 | `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson02/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
 
 ### Registered method values
@@ -44,8 +45,10 @@ All options are optional. An option that takes a value requires that value when 
 ### Lesson output
 
 Lesson commands automatically save summary tables to `output/lesson02/TIMESTAMP/summary.csv`
-and other output to `run.log` in the same directory. Tables also appear in the terminal;
-the log points to the CSV instead of duplicating the tables.
+and other output to `run.log` in the same directory. Successful runs write only to files
+by default. Add `--verbose` to also display output and summary tables in the terminal.
+The log points to the CSV instead of duplicating the tables. Read the saved files for
+the outputs discussed below, or use `--verbose` to inspect them on screen.
 Each run gets a new directory. Use `--output-dir` to choose a directory; reusing it
 overwrites its CSV and log. See [output conventions](../docs/command-outputs.md).
 

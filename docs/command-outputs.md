@@ -5,8 +5,9 @@ Run lesson commands from any directory in the activated project environment afte
 [package installation instructions](../README.md#install-packages).
 
 Each lesson command automatically creates a directory and saves its printed
-summary tables to `output/lessonNN/TIMESTAMP/summary.csv`. Tables also appear
-in the terminal. The `run.log` in the same directory records other output,
+summary tables to `output/lessonNN/TIMESTAMP/summary.csv`. Successful runs write
+only to files by default. Add `--verbose` to also display summary tables and other
+output in the terminal. The `run.log` in the same directory records other output,
 such as traces, diagnostics, and warnings, plus a message pointing to the saved CSV;
 it does not duplicate the summary tables.
 Timestamps include microseconds so separate runs preserve previous results.
@@ -52,6 +53,22 @@ are blank (for example, DP has no `visits`). Iteration counts and truncation cou
 describe the whole method run and repeat across its state rows. Lesson 04 similarly
 repeats algorithm statistics across its state rows; the terminal action is `terminal`.
 Traces, warnings, and single-run bandit estimates and counts remain in `run.log`.
+
+## Show output in the terminal
+
+Add `--verbose` to any lesson command to display its output as well as saving it:
+
+```bash
+RL lesson01 --policy right --trace --verbose
+RL lesson02 --method dp --verbose
+RL lesson03 --runs 1 --steps 20 --verbose
+RL lesson04 --algorithm both --verbose
+```
+
+Verbose mode also displays the saved-file paths. It does not change the CSV, log,
+plots, or experiment results. In lesson 01, `--quiet` still suppresses individual
+episode summaries and an explicit `--trace` still records transitions in `run.log`;
+`--verbose` also displays those requested transitions and the final summary table.
 
 ## Choose a run directory
 

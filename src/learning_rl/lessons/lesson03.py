@@ -52,7 +52,7 @@ def main(argv=None, *, prog=None):
         parser.error("means and initial must be finite")
     if not all(0 <= e <= 1 for e in args.epsilons):
         parser.error("epsilons must be in [0, 1]")
-    with lesson_output("lesson03", args.output_dir) as directory:
+    with lesson_output("lesson03", args.output_dir, verbose=args.verbose) as directory:
         rows = []
         for epsilon in args.epsilons:
             results = [experiment(args.means, args.steps, epsilon, args.initial, args.seed, run)

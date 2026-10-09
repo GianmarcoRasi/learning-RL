@@ -27,6 +27,7 @@ All options are optional. An option that takes a value requires that value when 
 | `--gamma` | optional | Placeholder: `GAMMA`; finite real number in [0, 1), dimensionless. Default: `0.9`. | Discount factor used to calculate values and improve policies. |
 | `--theta` | optional | Placeholder: `THETA`; real number > 0. Default: `1e-10`. | Stop policy evaluation or value iteration when the largest value change in a sweep is below this tolerance. |
 | `--max-iterations` | optional | Placeholder: `MAX_ITERATIONS`; integer ≥ 1. Default: `100000`. | Limit policy improvement rounds, sweeps per policy evaluation, and value iteration sweeps; report failure if convergence is not reached. |
+| `--verbose` | optional | No value; flag. Default: disabled. | Also display output and summary tables in the terminal. |
 | `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson04/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
 
 ### Registered algorithm values
@@ -40,8 +41,10 @@ All options are optional. An option that takes a value requires that value when 
 ### Lesson output
 
 Lesson commands automatically save summary tables to `output/lesson04/TIMESTAMP/summary.csv`
-and other output to `run.log` in the same directory. Tables also appear in the terminal;
-the log points to the CSV instead of duplicating the tables.
+and other output to `run.log` in the same directory. Successful runs write only to files
+by default. Add `--verbose` to also display output and summary tables in the terminal.
+The log points to the CSV instead of duplicating the tables. Read the saved files for
+the outputs discussed below, or use `--verbose` to inspect them on screen.
 Each run gets a new directory. Use `--output-dir` to choose a directory; reusing it
 overwrites its CSV and log. See [output conventions](../docs/command-outputs.md).
 

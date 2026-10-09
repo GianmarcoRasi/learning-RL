@@ -34,11 +34,12 @@ All options are optional. An option that takes a value requires that value when 
 | `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Seed for reproducible random actions. |
 | `--step-reward` | optional | Placeholder: `STEP_REWARD`; finite real number. Default: `-1`. | Reward for transitions that do not enter the goal. |
 | `--goal-reward` | optional | Placeholder: `GOAL_REWARD`; finite real number. Default: `10`. | Reward for entering the goal. |
-| `--trace` | optional | No value; flag. Default: disabled. | Print every recorded transition. |
+| `--trace` | optional | No value; flag. Default: disabled. | Record every transition in `run.log`; also display it with `--verbose`. |
 | `--quiet` | optional | No value; flag. Default: disabled. | Suppress episode summaries; retain the final table and any requested trace. |
 | `--compare` | optional | No value; flag. Default: disabled. | Run both registered policies; override `--policy`. |
 | `--plots` | optional | Placeholder: `PLOTS_DIRECTORY`; relative or absolute directory path. Default: no plots. | Save PNG plots in this directory, creating it if needed. |
 | `--plot-episodes` | optional | Placeholder: `PLOT_EPISODES`; integer ≥ 1. Default: `3`. | Maximum episodes per policy for individual trajectory and reward plots; used with `--plots`. |
+| `--verbose` | optional | No value; flag. Default: disabled. | Also display output and summary tables in the terminal. |
 | `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson01/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
 
 ### Registered policy values
@@ -51,8 +52,10 @@ All options are optional. An option that takes a value requires that value when 
 ### Lesson output
 
 Lesson commands automatically save summary tables to `output/lesson01/TIMESTAMP/summary.csv`
-and other output to `run.log` in the same directory. Tables also appear in the terminal;
-the log points to the CSV instead of duplicating the tables.
+and other output to `run.log` in the same directory. Successful runs write only to files
+by default. Add `--verbose` to also display output and summary tables in the terminal.
+The log points to the CSV instead of duplicating the tables. Read the saved files for
+the outputs discussed below, or use `--verbose` to inspect them on screen.
 Each run gets a new directory. Use `--output-dir` to choose a directory; reusing it
 overwrites its CSV and log. See [output conventions](../docs/command-outputs.md).
 
@@ -111,7 +114,7 @@ See the [command options table](#command-options) for accepted values and defaul
 **Inspect one always-right episode.** Follow the courier's decisions from the depot to the goal:
 
 ```bash
-RL lesson01 --policy right --trace
+RL lesson01 --policy right --trace --verbose
 ```
 
 The terminal first prints four transition lines. Each identifies the policy, episode, current state, action, next state, and immediate reward:
@@ -132,12 +135,12 @@ $$
 **Compare policies over a batch.** Compare 100 episodes of each fixed policy under the same environment settings:
 
 ```bash
-RL lesson01 --compare --episodes 100 --seed 7 --quiet
+RL lesson01 --compare --episodes 100 --seed 7 --quiet --verbose
 ```
 
 The terminal prints a summary table with two rows, `right` and `random`, and no individual episode summaries or transition lines. Both rows have `episodes=100`. The `right` row has `reward_sum=7.000`, `return=4.580`, `steps=4.000`, `success_rate=1.000`, and `truncated=0`. The `random` row summarizes trajectories of varying lengths; inspect its return, step count, success rate, and truncation count to assess the policy within the 100-step cutoff. Repeating this command in the same Python environment reproduces its seeded results.
 
-In both commands' final tables, `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. Both commands also print the saved-file paths for `summary.csv` and `run.log`; see [Lesson output](#lesson-output) for their locations and contents.
+In both commands' final tables, `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. Both commands also print the saved-file paths for `summary.csv` and `run.log`; see [Lesson output](#lesson-output) for their locations and contents. Without `--verbose`, the same results are saved to files and nothing is printed to the terminal: read the summary rows in `summary.csv` and the requested trace and episode summaries in `run.log`.
 
 Nothing is learning: these commands evaluate fixed policies. Recording and plotting consume no random draws.
 
