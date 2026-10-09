@@ -109,7 +109,7 @@ Before running the program, predict how many transitions it takes to finish and 
 
 ### Run from your terminal
 
-See the [command options table](#command-options) for accepted values and defaults.
+See the [command options table](#command-options) for accepted values and defaults. The examples below show the full terminal output with `--verbose`. In the saved-file paths, `TIMESTAMP` stands for the directory created for that run; path separators depend on your operating system. Seeded random results are reproducible within the same Python environment.
 
 **Inspect one always-right episode.** Follow the courier's decisions from the depot to the goal:
 
@@ -117,16 +117,24 @@ See the [command options table](#command-options) for accepted values and defaul
 RL lesson01 --policy right --trace --verbose
 ```
 
-The terminal first prints four transition lines. Each identifies the policy, episode, current state, action, next state, and immediate reward:
-
 ```text
 policy=right episode=1 state=0 action=1 next_state=1 reward=-1
 policy=right episode=1 state=1 action=1 next_state=2 reward=-1
 policy=right episode=1 state=2 action=1 next_state=3 reward=-1
 policy=right episode=1 state=3 action=1 next_state=4 reward=10
+policy=right episode=1 steps=4 reward_sum=7.000 return=4.580 terminated=True truncated=False
+
+Summary (gamma=0.9; returns stop at termination or cutoff)
+policy     episodes   reward_sum       return      steps  success_rate  truncated
+right             1        7.000        4.580      4.000         1.000          0
+reward_sum, return and steps are means over all recorded episodes.
+Summary saved to output/lesson01/TIMESTAMP/summary.csv
+Output saved to output/lesson01/TIMESTAMP/run.log
 ```
 
-An episode summary follows with `steps=4`, `reward_sum=7.000`, `return=4.580`, `terminated=True`, and `truncated=False`. The final summary table contains one `right` row with `episodes=1`, the same reward sum, return and step count, `success_rate=1.000`, and `truncated=0`. At $\gamma=0.9$, the discounted return is:
+Each of the first four lines identifies the policy, episode, current state, action, next state, and immediate reward. Read `action=1` as a move right: the states progress from zero to four, and only the last transition earns `10`. The episode summary confirms that reaching the goal terminates the episode after four steps, without truncation.
+
+The final table has one `right` row. Because this run contains only one episode, its mean reward sum, return and step count match the episode summary. The reward sum is $-1-1-1+10=7$; at $\gamma=0.9$, the discounted return is:
 
 $$
 G_0=-1-0.9-0.9^2+10(0.9^3)=4.58.
@@ -138,31 +146,68 @@ $$
 RL lesson01 --compare --episodes 100 --seed 7 --quiet --verbose
 ```
 
-The terminal prints a summary table with two rows, `right` and `random`, and no individual episode summaries or transition lines. Both rows have `episodes=100`. The `right` row has `reward_sum=7.000`, `return=4.580`, `steps=4.000`, `success_rate=1.000`, and `truncated=0`. The `random` row summarizes trajectories of varying lengths; inspect its return, step count, success rate, and truncation count to assess the policy within the 100-step cutoff. Repeating this command in the same Python environment reproduces its seeded results.
+```text
 
-In both commands' final tables, `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. Both commands also print the saved-file paths for `summary.csv` and `run.log`; see [Lesson output](#lesson-output) for their locations and contents. Without `--verbose`, the same results are saved to files and nothing is printed to the terminal: read the summary rows in `summary.csv` and the requested trace and episode summaries in `run.log`.
+Summary (gamma=0.9; returns stop at termination or cutoff)
+policy     episodes   reward_sum       return      steps  success_rate  truncated
+right           100        7.000        4.580      4.000         1.000          0
+random          100      -10.570       -4.697     21.570         1.000          0
+reward_sum, return and steps are means over all recorded episodes.
+Summary saved to output/lesson01/TIMESTAMP/summary.csv
+Output saved to output/lesson01/TIMESTAMP/run.log
+```
 
-Nothing is learning: these commands evaluate fixed policies. Recording and plotting consume no random draws.
+Read the two rows together. Always-right repeats the four-step route, so its mean results match the single episode above. In this recorded batch, random also reaches the goal in every episode, but takes `21.570` steps on average. The extra movement costs lower its mean reward sum to `-10.570`, while discounting gives a mean return of `-4.697`. Equal success rates therefore do not imply equal performance. Neither policy is learning.
+
+In both tables, `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. Here both truncation counts are zero; a different seed or step limit can produce truncated random episodes.
+
+The final lines identify the saved files. Summary rows are in `summary.csv`; traces and episode summaries, when requested, are in `run.log`. See [Lesson output](#lesson-output) for their locations and contents. Without `--verbose`, the same files are saved and nothing is printed to the terminal.
 
 ### Generate plots
 
-Generate plots with:
+Visualize the same 100-episode comparison, using the first episode of each policy for the individual plots:
 
 ```bash
-RL lesson01 --compare --episodes 100 --seed 7 --quiet --plots output/lesson01/comparison/plots
+RL lesson01 --compare --episodes 100 --seed 7 --quiet --plot-episodes 1 --plots output/lesson01/reference-plots/plots --verbose
 ```
 
-`--plots DIRECTORY` saves PNG files without opening windows. Open the saved images in an image viewer. Each command uses the same filenames within its output directory, so use distinct directories for experiments you want to keep. Without `--plots`, the command produces text output only.
+```text
 
-| Plot | Saved file | What to inspect |
+Summary (gamma=0.9; returns stop at termination or cutoff)
+policy     episodes   reward_sum       return      steps  success_rate  truncated
+right           100        7.000        4.580      4.000         1.000          0
+random          100      -10.570       -4.697     21.570         1.000          0
+reward_sum, return and steps are means over all recorded episodes.
+Summary saved to output/lesson01/TIMESTAMP/summary.csv
+Plots saved to WORKING_DIRECTORY/output/lesson01/reference-plots/plots
+Output saved to output/lesson01/TIMESTAMP/run.log
+```
+
+The summary rows match the batch above: recording and plotting consume no random draws. `WORKING_DIRECTORY` in the plot path stands for the directory from which you ran the command. The command saves the eight PNG files shown below without opening windows. Use distinct plot directories for experiments you want to keep, since later runs reuse these filenames. See the [command options table](#command-options) for other settings.
+
+| Plot | Saved files | What to inspect |
 | --- | --- | --- |
-| Episode trajectory | `right-1-trajectory.png`, etc. | Position against decision step, including initial state $S_0$. A star marks termination; an X marks truncation. The dashed line is the goal. |
-| Rewards and cumulative discounted reward | `right-1-rewards.png`, etc. | Immediate rewards and cumulative discounted reward in separate panels. |
-| Policy comparison | `comparison.png` | Box plots of recorded returns and lengths, and bars for success rates. The title includes truncation counts. |
-| Return by discount factor | `right-1-discount.png`, etc. | The same recorded trajectory scored at discounts from zero to one. |
-| Running mean return | `running-mean.png` | Running estimates of each fixed policy's mean recorded return. This is not a learning curve. |
+| Episode trajectory | `right-1-trajectory.png`, `random-1-trajectory.png` | Positions and ending status of the first episode of each policy. |
+| Rewards and cumulative discounted reward | `right-1-rewards.png`, `random-1-rewards.png` | Immediate rewards and the return accumulated from the start. |
+| Policy comparison | `comparison.png` | Return and length distributions, success rates, and truncation counts across all 100 episodes per policy. |
+| Return by discount factor | `right-1-discount.png`, `random-1-discount.png` | Each first episode scored at discounts from zero to one. |
+| Running mean return | `running-mean.png` | Mean recorded return as more episodes of each fixed policy are observed. |
 
-By default, trajectory and reward plots are saved for the first three episodes per policy. `--plot-episodes 1` limits these to the first episode. The discount plot always uses the first episode; comparison and running-mean plots use every episode. An experiment is a dictionary mapping policy labels to lists of `Episode` records. Each record contains states, actions, rewards, and termination status. Plot functions return a Matplotlib figure, so they can also be called directly from Python; close the figure after saving it.
+#### Episode trajectories
+
+![Always-right episode 1: the courier reaches position four in four steps.](assets/lesson01/right-1-trajectory.png)
+
+The always-right trajectory rises by one position at each decision step, matching the four transition lines above. The initial point is $S_0=0$; the star at step four marks termination at the dashed goal line.
+
+![Random episode 1: repeated visits to the depot precede reaching the goal at step 43.](assets/lesson01/random-1-trajectory.png)
+
+The first random episode returns to the depot repeatedly and reaches the goal at step 43. This is one trajectory, whereas `21.570` in the batch table is the mean over 100 trajectories. Both pictured episodes terminate; a truncated episode would end with an X below the goal.
+
+#### Rewards and cumulative discounted reward
+
+![Always-right rewards: three movement costs followed by the goal reward; cumulative discounted reward ends at 4.58.](assets/lesson01/right-1-rewards.png)
+
+In the top panel, the first three rewards are `-1` and the fourth is `10`. In the bottom panel, the cumulative discounted reward falls as movement costs accumulate, then rises to `4.58` when the goal reward arrives. This endpoint matches the always-right return in both summary tables.
 
 The cumulative reward panel shows
 
@@ -170,9 +215,35 @@ $$
 C_n=\sum_{t=0}^{n-1}\gamma^t R_{t+1},\qquad C_0=0.
 $$
 
-Its final value equals the reported recorded return. Intermediate points accumulate rewards from the start; they are not future returns $G_t$. For a truncated episode, the final point excludes unobserved future rewards.
+Intermediate points accumulate rewards from the start; they are not future returns $G_t$. The final point equals the episode's recorded return. For a truncated episode, it excludes unobserved future rewards.
 
-Compare policies under identical size, reward rule, discount and step limit. Box plots show variation across episodes; always-right produces a constant value. Lengths of truncated episodes equal the cutoff, so the length plot does not estimate how long those episodes would eventually take to finish.
+![Random episode 1 rewards: 42 movement costs precede the goal reward; cumulative discounted reward ends near minus 9.761.](assets/lesson01/random-1-rewards.png)
+
+The first random episode incurs 42 movement costs before earning `10`. At $\gamma=0.9$, the late goal reward adds only a small amount to the cumulative discounted reward, which ends near `-9.761`. This is the return of that first episode; `-4.697` in the batch table averages the returns of all 100 random episodes.
+
+#### Policy comparison
+
+![Comparison of recorded returns, episode lengths, and success rates for 100 episodes of each policy.](assets/lesson01/comparison.png)
+
+The always-right boxes collapse to lines because every episode has the same return and length. The random boxes show variation; their orange lines mark medians, while the summary table reports means. Points beyond the length box's whiskers represent unusually long episodes. Both success bars reach one, and the title confirms zero truncations in this batch. Random can therefore be less efficient even when it succeeds every time in the sample.
+
+Compare policies under identical size, reward rule, discount and step limit. If an episode truncates, its recorded length equals the cutoff; the length plot does not estimate how long it would eventually take to finish.
+
+#### Return by discount factor
+
+![The first always-right trajectory rescored from discount zero to one.](assets/lesson01/right-1-discount.png)
+
+For the always-right trajectory, discount zero counts only the first reward, giving `-1`; discount one counts every reward equally, giving the reward sum `7`. At discount `0.9`, the curve gives `4.58`, as in the summary table. Changing the discount rescores this recorded trajectory without changing its states or actions.
+
+![The first random trajectory rescored from discount zero to one.](assets/lesson01/random-1-discount.png)
+
+For the 43-step random trajectory, discount zero again gives `-1`, but discount one gives `-32`: the sum of 42 movement costs and the goal reward. The two curves demonstrate that increasing the discount need not improve a trajectory's return; it changes the weight of delayed costs as well as rewards.
+
+#### Running mean return
+
+![Running mean returns: always-right stays at 4.58 while the random estimate fluctuates and ends near minus 4.697.](assets/lesson01/running-mean.png)
+
+The always-right mean stays at `4.58`. The random mean fluctuates as episodes are added, ending near `-4.697` after episode 100, which matches the batch table. This is a performance estimate for a fixed policy, not a learning curve. More observations can stabilize an estimate without improving the policy or guaranteeing a better mean.
 
 ### Interpretation
 
