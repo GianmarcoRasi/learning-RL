@@ -21,6 +21,8 @@ RL lesson01 --help
 
 All options are optional. An option that takes a value requires that value when supplied. Flags take no value.
 
+<a id="command-options"></a>
+
 | Option | Required | Values | Role |
 | --- | --- | --- | --- |
 | `-h`, `--help` | optional | No value; flag. | Display help and exit. |
@@ -104,22 +106,40 @@ Before running the program, predict how many transitions it takes to finish and 
 
 ### Run from your terminal
 
-Run one traced episode and a batch comparison:
+See the [command options table](#command-options) for accepted values and defaults.
+
+**Inspect one always-right episode.** Follow the courier's decisions from the depot to the goal:
 
 ```bash
 RL lesson01 --policy right --trace
-RL lesson01 --compare --episodes 100 --seed 7 --quiet
 ```
 
-For the default always-right run, expect four steps, a reward sum of `7`, and discounted return `4.58` at $\gamma=0.9$:
+The terminal first prints four transition lines. Each identifies the policy, episode, current state, action, next state, and immediate reward:
+
+```text
+policy=right episode=1 state=0 action=1 next_state=1 reward=-1
+policy=right episode=1 state=1 action=1 next_state=2 reward=-1
+policy=right episode=1 state=2 action=1 next_state=3 reward=-1
+policy=right episode=1 state=3 action=1 next_state=4 reward=10
+```
+
+An episode summary follows with `steps=4`, `reward_sum=7.000`, `return=4.580`, `terminated=True`, and `truncated=False`. The final summary table contains one `right` row with `episodes=1`, the same reward sum, return and step count, `success_rate=1.000`, and `truncated=0`. At $\gamma=0.9$, the discounted return is:
 
 $$
 G_0=-1-0.9-0.9^2+10(0.9^3)=4.58.
 $$
 
-Every command ends with a summary table. `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. `--quiet` suppresses individual episode summaries; an explicitly requested `--trace` still prints transitions. `--compare` runs both right and random policies with the same environment settings and episode count, overriding `--policy`.
+**Compare policies over a batch.** Compare 100 episodes of each fixed policy under the same environment settings:
 
-`--seed` reproduces random runs in the same Python environment. Recording and plotting consume no random draws. Nothing is learning: the policies are fixed.
+```bash
+RL lesson01 --compare --episodes 100 --seed 7 --quiet
+```
+
+The terminal prints a summary table with two rows, `right` and `random`, and no individual episode summaries or transition lines. Both rows have `episodes=100`. The `right` row has `reward_sum=7.000`, `return=4.580`, `steps=4.000`, `success_rate=1.000`, and `truncated=0`. The `random` row summarizes trajectories of varying lengths; inspect its return, step count, success rate, and truncation count to assess the policy within the 100-step cutoff. Repeating this command in the same Python environment reproduces its seeded results.
+
+In both commands' final tables, `reward_sum`, `return`, and `steps` are means over **all** recorded episodes, including truncated ones. `success_rate` is the fraction reaching the goal; `truncated` is a count. Both commands also print the saved-file paths for `summary.csv` and `run.log`; see [Lesson output](#lesson-output) for their locations and contents.
+
+Nothing is learning: these commands evaluate fixed policies. Recording and plotting consume no random draws.
 
 ### Generate plots
 
