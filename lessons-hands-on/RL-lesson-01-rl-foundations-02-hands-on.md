@@ -2,7 +2,7 @@
 
 > **Vocabulary:** Use the [project glossary](../docs/glossary.md) for the terms and notation shared by all lessons and code.
 
-> **Concepts and theoretical exercises:** [RL-lesson-01-rl-foundations](RL-lesson-01-rl-foundations-01.md)  
+> **Concepts and theoretical exercises:** [RL-lesson-01-rl-foundations](../lessons/RL-lesson-01-rl-foundations-01.md)\
 > **Study pace:** Allow 45–75 minutes for the experiment lab and practical exercises.
 >
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
@@ -14,6 +14,37 @@
 After installation, run lesson commands from any directory with the project virtual environment activated. Relative output paths are resolved from your current directory. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. Exercises and solutions follow at the end.
+
+```bash
+RL lesson01 --help
+```
+
+All options are optional. An option that takes a value requires that value when supplied. Flags take no value.
+
+| Option | Required | Values | Role |
+| --- | --- | --- | --- |
+| `-h`, `--help` | optional | No value; flag. | Display help and exit. |
+| `--policy` | optional | Placeholder: `POLICY`; one [registered policy](#registered-policy-values). Default: `right`. | Select the fixed policy. |
+| `--size` | optional | Placeholder: `SIZE`; integer ≥ 2. Default: `5`. | Number of positions, including start and goal. |
+| `--episodes` | optional | Placeholder: `EPISODES`; integer ≥ 1. Default: `1`. | Episodes to run per policy. |
+| `--max-steps` | optional | Placeholder: `MAX_STEPS`; integer ≥ 1. Default: `100`. | Maximum transitions per episode before truncation. |
+| `--gamma` | optional | Placeholder: `GAMMA`; finite real number in [0, 1], dimensionless. Default: `0.9`. | Discount factor used to calculate returns. |
+| `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Seed for reproducible random actions. |
+| `--step-reward` | optional | Placeholder: `STEP_REWARD`; finite real number. Default: `-1`. | Reward for transitions that do not enter the goal. |
+| `--goal-reward` | optional | Placeholder: `GOAL_REWARD`; finite real number. Default: `10`. | Reward for entering the goal. |
+| `--trace` | optional | No value; flag. Default: disabled. | Print every recorded transition. |
+| `--quiet` | optional | No value; flag. Default: disabled. | Suppress episode summaries; retain the final table and any requested trace. |
+| `--compare` | optional | No value; flag. Default: disabled. | Run both registered policies; override `--policy`. |
+| `--plots` | optional | Placeholder: `PLOTS_DIRECTORY`; relative or absolute directory path. Default: no plots. | Save PNG plots in this directory, creating it if needed. |
+| `--plot-episodes` | optional | Placeholder: `PLOT_EPISODES`; integer ≥ 1. Default: `3`. | Maximum episodes per policy for individual trajectory and reward plots; used with `--plots`. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson01/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
+
+### Registered policy values
+
+| Value of `POLICY` | Role |
+| --- | --- |
+| `right` | Always move right toward the goal. |
+| `random` | Choose left or right with equal probability at each step. |
 
 ### Lesson output
 
@@ -73,37 +104,6 @@ Before running the program, predict how many transitions it takes to finish and 
 
 ### Run from your terminal
 
-```bash
-RL lesson01 --help
-```
-
-All options are optional. An option that takes a value requires that value when supplied. Flags take no value.
-
-| Option | Required | Values | Role |
-| --- | --- | --- | --- |
-| `-h`, `--help` | optional | No value; flag. | Display help and exit. |
-| `--policy` | optional | Placeholder: `POLICY`; one [registered policy](#registered-policy-values). Default: `right`. | Select the fixed policy. |
-| `--size` | optional | Placeholder: `SIZE`; integer ≥ 2. Default: `5`. | Number of positions, including start and goal. |
-| `--episodes` | optional | Placeholder: `EPISODES`; integer ≥ 1. Default: `1`. | Episodes to run per policy. |
-| `--max-steps` | optional | Placeholder: `MAX_STEPS`; integer ≥ 1. Default: `100`. | Maximum transitions per episode before truncation. |
-| `--gamma` | optional | Placeholder: `GAMMA`; finite real number in [0, 1], dimensionless. Default: `0.9`. | Discount factor used to calculate returns. |
-| `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Seed for reproducible random actions. |
-| `--step-reward` | optional | Placeholder: `STEP_REWARD`; finite real number. Default: `-1`. | Reward for transitions that do not enter the goal. |
-| `--goal-reward` | optional | Placeholder: `GOAL_REWARD`; finite real number. Default: `10`. | Reward for entering the goal. |
-| `--trace` | optional | No value; flag. Default: disabled. | Print every recorded transition. |
-| `--quiet` | optional | No value; flag. Default: disabled. | Suppress episode summaries; retain the final table and any requested trace. |
-| `--compare` | optional | No value; flag. Default: disabled. | Run both registered policies; override `--policy`. |
-| `--plots` | optional | Placeholder: `PLOTS_DIRECTORY`; relative or absolute directory path. Default: no plots. | Save PNG plots in this directory, creating it if needed. |
-| `--plot-episodes` | optional | Placeholder: `PLOT_EPISODES`; integer ≥ 1. Default: `3`. | Maximum episodes per policy for individual trajectory and reward plots; used with `--plots`. |
-| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson01/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
-
-#### Registered policy values
-
-| Value of `POLICY` | Role |
-| --- | --- |
-| `right` | Always move right toward the goal. |
-| `random` | Choose left or right with equal probability at each step. |
-
 Run one traced episode and a batch comparison:
 
 ```bash
@@ -161,7 +161,7 @@ With sparse rewards and $\gamma=1$, all successful trajectories earn the same re
 
 ## Hands-on convention for this course
 
-Every hands-on lab provides a complete command-line entry point, `--help`, configurable experiment arguments, and example terminal commands. Exercises ask you to run the supplied code and provide specific outputs and explanations. Plots supplement traces and summary tables; plotting dependencies are installed by default. Future hands-on lessons should follow this convention.
+Every hands-on lab lives in `lessons-hands-on/` and provides a complete command-line entry point, `--help`, configurable experiment arguments, and example terminal commands. Under "Setup and commands", place the help command before a table of all options with Required, Values, and Role columns. Define placeholders without angle brackets and include accepted values and defaults in Values; place any linked tables of registered values immediately afterward. Exercises ask you to run the supplied code and provide specific outputs and explanations. Plots supplement traces and summary tables; plotting dependencies are installed by default. Future hands-on lessons should follow this convention.
 
 ## 2. Practical exercises — Inspect and compare fixed policies
 

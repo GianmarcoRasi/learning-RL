@@ -9,7 +9,7 @@
 > **Course:** Reinforcement Learning — Theory + Practice  
 > **Lesson goal:** Build the mental model that everything else in RL will use.
 
-**Hands-on companion:** [Python labs and practical exercises](RL-lesson-01-rl-foundations-02-hands-on.md)
+**Hands-on companion:** [Python labs and practical exercises](../lessons-hands-on/RL-lesson-01-rl-foundations-02-hands-on.md)
 
 ### How to study this lesson
 
@@ -261,7 +261,7 @@ $$
 
 The policy supplies the choices; the MDP supplies their consequences; the return scores the resulting future. This policy is specified in advance—nothing is learning yet.
 
-Implement this environment and compare fixed and random policies in the [hands-on companion](RL-lesson-01-rl-foundations-02-hands-on.md). That lab also explores simulation cutoffs and alternative reward rules.
+Implement this environment and compare fixed and random policies in the [hands-on companion](../lessons-hands-on/RL-lesson-01-rl-foundations-02-hands-on.md). That lab also explores simulation cutoffs and alternative reward rules.
 
 ------------------------------------------------------------------------
 

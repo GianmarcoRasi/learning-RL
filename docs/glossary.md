@@ -10,7 +10,7 @@ concrete instances of a **state**, rather than new technical terms.
 ## Foundations
 
 Source: [Lesson 1](../lessons/RL-lesson-01-rl-foundations-01.md) and its
-[hands-on tutorial](../lessons/RL-lesson-01-rl-foundations-02-hands-on.md).
+[hands-on tutorial](../lessons-hands-on/RL-lesson-01-rl-foundations-02-hands-on.md).
 
 - **Reinforcement learning (RL):** Learning what actions to take through experience when choices have consequences over time.
 - **Supervised learning:** Learning from examples that include target answers; RL feedback instead scores outcomes without labeling the best action.
@@ -56,7 +56,7 @@ Source: [Lesson 1](../lessons/RL-lesson-01-rl-foundations-01.md) and its
 ## Values and policy evaluation
 
 Source: [Lesson 2](../lessons/RL-lesson-02-value-functions-bellman-01.md) and its
-[hands-on tutorial](../lessons/RL-lesson-02-value-functions-bellman-02-hands-on.md).
+[hands-on tutorial](../lessons-hands-on/RL-lesson-02-value-functions-bellman-02-hands-on.md).
 
 - **Value:** Expected return across possible futures, distinct from the return of one trajectory.
 - **State-value function / state value**, $V^\pi(s)$: Expected return starting in state $s$ and following policy $\pi$. Terminal state value is zero.
@@ -81,7 +81,7 @@ Source: [Lesson 2](../lessons/RL-lesson-02-value-functions-bellman-01.md) and it
 ## Bandits and exploration
 
 Source: [Lesson 3](../lessons/RL-lesson-03-bandits-exploration-01.md) and its
-[hands-on tutorial](../lessons/RL-lesson-03-bandits-exploration-02-hands-on.md).
+[hands-on tutorial](../lessons-hands-on/RL-lesson-03-bandits-exploration-02-hands-on.md).
 
 - **Multi-armed bandit:** Repeated choice among options with unknown reward distributions, without next-state transitions to track.
 - **Arm / pull:** An arm is an available option; a pull is one selection and reward observation.
@@ -119,7 +119,7 @@ total pull count $t$.
 ## Dynamic programming control
 
 Source: [Lesson 4](../lessons/RL-lesson-04-dynamic-programming-control-01.md) and its
-[hands-on tutorial](../lessons/RL-lesson-04-dynamic-programming-control-02-hands-on.md).
+[hands-on tutorial](../lessons-hands-on/RL-lesson-04-dynamic-programming-control-02-hands-on.md).
 
 - **Control:** Finding or improving a policy, rather than evaluating a fixed one.
 - **Dynamic programming (DP):** Planning with a known model by repeatedly combining immediate rewards and continuation values.

@@ -2,7 +2,7 @@
 
 > **Vocabulary:** Use the [project glossary](../docs/glossary.md) for the terms and notation shared by all lessons and code.
 
-> **Concepts and theoretical exercises:** [RL-lesson-02-value-functions-bellman](RL-lesson-02-value-functions-bellman-01.md)  
+> **Concepts and theoretical exercises:** [RL-lesson-02-value-functions-bellman](../lessons/RL-lesson-02-value-functions-bellman-01.md)\
 > **Study pace:** Allow 45–75 minutes for the experiment lab and practical exercises.
 >
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
@@ -12,6 +12,34 @@
 After installation, run lesson commands from any directory with the project virtual environment activated. Relative output paths are resolved from your current directory. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. No source edits or new programs are required. Exercises and solutions follow at the end.
+
+```bash
+RL lesson02 --help
+```
+
+All options are optional. An option that takes a value requires that value when supplied. Flags take no value.
+
+| Option | Required | Values | Role |
+| --- | --- | --- | --- |
+| `-h`, `--help` | optional | No value; flag. | Display help and exit. |
+| `--method` | optional | Placeholder: `METHOD`; one [registered method](#registered-method-values). Default: `compare`. | Select how to evaluate the fixed policy. |
+| `--size` | optional | Placeholder: `SIZE`; integer ≥ 2. Default: `5`. | Number of positions, including start and goal. |
+| `--gamma` | optional | Placeholder: `GAMMA`; finite real number in [0, 1), dimensionless. Default: `0.9`. | Discount factor used to calculate values. |
+| `--right-prob` | optional | Placeholder: `RIGHT_PROB`; finite real number in [0, 1], dimensionless. Default: `0.5`. | Probability of moving right under the fixed policy. |
+| `--episodes` | optional | Placeholder: `EPISODES`; integer ≥ 1. Default: `10000`. | Number of episodes sampled by MC. |
+| `--max-steps` | optional | Placeholder: `MAX_STEPS`; integer ≥ 1. Default: `1000`. | Maximum transitions per MC episode before truncation. |
+| `--theta` | optional | Placeholder: `THETA`; real number > 0. Default: `1e-10`. | Stop DP evaluation when the largest value change in a sweep is below this tolerance. |
+| `--max-iterations` | optional | Placeholder: `MAX_ITERATIONS`; integer ≥ 1. Default: `100000`. | Maximum DP evaluation sweeps before reporting failure to converge. |
+| `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Seed for reproducible MC sampling. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson02/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
+
+### Registered method values
+
+| Value of `METHOD` | Role |
+| --- | --- |
+| `mc` | Estimate state values from every-visit Monte Carlo suffix returns. |
+| `dp` | Compute state values from the known model using iterative policy evaluation. |
+| `compare` | Run both MC and DP evaluation. |
 
 ### Lesson output
 
@@ -61,7 +89,6 @@ The `mc` mode averages observed suffix returns from every visit. Within-episode 
 ### Run and compare
 
 ```bash
-RL lesson02 --help
 RL lesson02 --method compare --episodes 10000 --seed 7
 RL lesson02 --method dp --right-prob 1
 RL lesson02 --method compare --gamma 0.5 --episodes 10000

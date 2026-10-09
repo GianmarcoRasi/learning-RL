@@ -117,13 +117,14 @@ When a lesson introduces a term, add its definition and lesson reference to the 
 - `src/learning_rl/lessons/`: runnable labs for Lessons 1–4.
 - `src/learning_rl/environments/`: the shared LineWorld interaction and transition model.
 - `src/learning_rl/plotting/`: plotting functions; currently Lesson 1.
-- `lessons/`: theory, usage tutorials, exercises, and their solutions.
+- `lessons/`: theory, theoretical exercises, and their solutions.
+- `lessons-hands-on/`: command references, usage tutorials, practical exercises, and their solutions.
 - `docs/`: command-output documentation and study flashcards in `docs/flashcards/`.
 - `tests/`: numeric, CLI, and plotting checks.
 - `output/`: automatically saved command logs, grouped by lesson and run, plus optional plots. See [output conventions](docs/command-outputs.md). Generated results are local and ignored by Git.
 
 Start with the [Lesson 1 theory](lessons/RL-lesson-01-rl-foundations-01.md)
-and its [hands-on tutorial](lessons/RL-lesson-01-rl-foundations-02-hands-on.md).
+and its [hands-on tutorial](lessons-hands-on/RL-lesson-01-rl-foundations-02-hands-on.md).
 The tutorials link to source files and show commands. Hands-on exercises use the
 supplied code and ask for specific outputs and interpretations; they never require
 source edits or new programs. Solutions remain in those tutorials. Run lesson examples from any directory after installing the course and activating its environment.

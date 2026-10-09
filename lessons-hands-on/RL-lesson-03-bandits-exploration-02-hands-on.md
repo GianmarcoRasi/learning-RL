@@ -2,7 +2,7 @@
 
 > **Vocabulary:** Use the [project glossary](../docs/glossary.md) for the terms and notation shared by all lessons and code.
 
-> **Concepts and theoretical exercises:** [RL-lesson-03-bandits-exploration](RL-lesson-03-bandits-exploration-01.md)  
+> **Concepts and theoretical exercises:** [RL-lesson-03-bandits-exploration](../lessons/RL-lesson-03-bandits-exploration-01.md)\
 > **Study pace:** Allow 45–75 minutes for the experiment lab and practical exercises.
 >
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
@@ -12,6 +12,23 @@
 After installation, run lesson commands from any directory with the project virtual environment activated. Relative output paths are resolved from your current directory. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. No source edits or new programs are required. Exercises and solutions follow at the end.
+
+```bash
+RL lesson03 --help
+```
+
+All options are optional. An option that takes a value requires that value when supplied. Flags take no value.
+
+| Option | Required | Values | Role |
+| --- | --- | --- | --- |
+| `-h`, `--help` | optional | No value; flag. | Display help and exit. |
+| `--means` | optional | Placeholder: `MEANS`; one or more space-separated finite real numbers. Default: `0.0 0.2 1.0`. | Hidden mean reward of each arm, in arm order. |
+| `--epsilons` | optional | Placeholder: `EPSILONS`; one or more space-separated finite real numbers in [0, 1], dimensionless. Default: `0.0 0.1 1.0`. | Exploration probabilities of the epsilon-greedy strategies to compare. |
+| `--steps` | optional | Placeholder: `STEPS`; integer ≥ 1. Default: `2000`. | Bandit pulls per run. |
+| `--runs` | optional | Placeholder: `RUNS`; integer ≥ 1. Default: `200`. | Independent repeated runs per epsilon setting. |
+| `--initial` | optional | Placeholder: `INITIAL`; finite real number. Default: `0.0`. | Initial estimated value of every arm. |
+| `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Base seed for the action and reward random stream schedule. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson03/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
 
 ### Lesson output
 
@@ -34,7 +51,6 @@ The lab reuses seed schedules across strategies. This can correlate their result
 ### Terminal commands
 
 ```bash
-RL lesson03 --help
 RL lesson03 --epsilons 0 0.1 1 --steps 2000 --runs 200 --seed 7
 RL lesson03 --epsilons 0.1 --runs 1 --steps 100 --seed 7
 RL lesson03 --epsilons 0 --initial 5 --runs 200

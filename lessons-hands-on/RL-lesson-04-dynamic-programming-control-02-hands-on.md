@@ -2,7 +2,7 @@
 
 > **Vocabulary:** Use the [project glossary](../docs/glossary.md) for the terms and notation shared by all lessons and code.
 
-> **Concepts and theoretical exercises:** [RL-lesson-04-dynamic-programming-control](RL-lesson-04-dynamic-programming-control-01.md)  
+> **Concepts and theoretical exercises:** [RL-lesson-04-dynamic-programming-control](../lessons/RL-lesson-04-dynamic-programming-control-01.md)\
 > **Study pace:** Allow 45–75 minutes for the experiment lab and practical exercises.
 >
 > **Prerequisites:** Read the companion lesson; Python loops, lists and functions.
@@ -12,6 +12,30 @@
 After installation, run lesson commands from any directory with the project virtual environment activated. Relative output paths are resolved from your current directory. Follow the [virtual environment setup](../README.md#create-a-local-virtual-environment) and [package installation instructions](../README.md#install-packages) in the README before starting. The standard installation includes Matplotlib for plotting in current and subsequent lessons.
 
 The walkthrough and exercises use the supplied command-line programs. Run experiments with their existing arguments, then report the requested outputs and interpretations. No source edits or new programs are required. Exercises and solutions follow at the end.
+
+```bash
+RL lesson04 --help
+```
+
+All options are optional. An option that takes a value requires that value when supplied. Flags take no value.
+
+| Option | Required | Values | Role |
+| --- | --- | --- | --- |
+| `-h`, `--help` | optional | No value; flag. | Display help and exit. |
+| `--algorithm` | optional | Placeholder: `ALGORITHM`; one [registered algorithm](#registered-algorithm-values). Default: `both`. | Select the DP control algorithm to run. |
+| `--size` | optional | Placeholder: `SIZE`; integer ≥ 2. Default: `5`. | Number of positions, including start and goal. |
+| `--gamma` | optional | Placeholder: `GAMMA`; finite real number in [0, 1), dimensionless. Default: `0.9`. | Discount factor used to calculate values and improve policies. |
+| `--theta` | optional | Placeholder: `THETA`; real number > 0. Default: `1e-10`. | Stop policy evaluation or value iteration when the largest value change in a sweep is below this tolerance. |
+| `--max-iterations` | optional | Placeholder: `MAX_ITERATIONS`; integer ≥ 1. Default: `100000`. | Limit policy improvement rounds, sweeps per policy evaluation, and value iteration sweeps; report failure if convergence is not reached. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson04/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
+
+### Registered algorithm values
+
+| Value of `ALGORITHM` | Role |
+| --- | --- |
+| `policy` | Alternate policy evaluation and greedy improvement using policy iteration. |
+| `value` | Apply Bellman optimality backups using value iteration, then extract a greedy policy. |
+| `both` | Run both policy iteration and value iteration. |
 
 ### Lesson output
 
@@ -53,7 +77,6 @@ The CLI compares algorithms and varies route length, discount and tolerance. It 
 ### Terminal commands
 
 ```bash
-RL lesson04 --help
 RL lesson04 --algorithm both
 RL lesson04 --algorithm policy --gamma 0.5
 RL lesson04 --algorithm value --size 20 --gamma 0.99
