@@ -4,24 +4,22 @@ Run lesson commands from any directory in the activated project environment afte
 [environment setup](../README.md#create-a-local-virtual-environment) and
 [package installation instructions](../README.md#install-packages).
 
-Each lesson command automatically creates a directory and saves its printed
-summary tables to `output/lessonNN/TIMESTAMP/summary.csv`. Successful runs print
+Each lesson command automatically creates a run directory and saves its printed
+summary tables to `summary.csv` there. Lessons 02–04 default to
+`output/lessonNN/TIMESTAMP/`, relative to the current directory. Successful runs print
 the saved-file paths by default. Add `--verbose` to also display summary tables and other
 output in the terminal. The `run.log` in the same directory records other output,
 such as traces, diagnostics, and warnings, plus a message pointing to the saved CSV;
 it does not duplicate the summary tables.
 Lesson 01 defaults to `~/learning-rl-output/lesson01/TIMESTAMP/` instead of a
 launch-directory-relative path. Its CSV, log and requested `plots/` all belong to
-that same run directory. Other lessons use the `output/` paths shown below.
+that same run directory. Lessons 02–04 use the `output/` paths shown below;
+Lesson 01 uses the same `TIMESTAMP/` layout under `~/learning-rl-output/lesson01/`.
 Timestamps include microseconds so separate runs preserve previous results.
 Help and argument validation errors do not create logs; errors stay in the terminal.
 
 ```text
 output/
-  lesson01/
-    TIMESTAMP/
-      run.log
-      summary.csv
   lesson02/
     TIMESTAMP/
       run.log

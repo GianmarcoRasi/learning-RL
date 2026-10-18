@@ -122,7 +122,8 @@ When a lesson introduces a term, add its definition and lesson reference to the 
 - `src/learning_rl/plotting/`: plotting functions; currently Lesson 1.
 - `lessons/`: theory, theoretical exercises, and their solutions.
 - `lessons-hands-on/`: command references, usage tutorials, practical exercises, and their solutions.
-- `docs/`: command-output documentation and study flashcards in `docs/flashcards/`.
+- `docs/`: command-output documentation and the project glossary.
+- `flashcards/`: Anki flashcard imports (currently Lesson 1).
 - `tests/`: numeric, CLI, and plotting checks.
 - `output/`: default command logs for lessons 02–04, grouped by lesson and run. Lesson 01 saves its CSV, log and optional figures under `~/learning-rl-output/lesson01/TIMESTAMP/` by default; `--output-dir` overrides the run directory. See [output conventions](docs/command-outputs.md). Generated results are local and ignored by Git.
 

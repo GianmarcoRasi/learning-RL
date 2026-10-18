@@ -86,7 +86,7 @@ def main(argv=None, *, prog=None):
     parser.add_argument("--compare", action="store_true", help="Run right and random; overrides --policy.")
     parser.add_argument("--plot-types", nargs="+",
                         choices=["all", "trajectory", "rewards", "discount", "comparison", "running-mean"],
-                        help="Enable selected plots, or all; save in OUTPUT_DIRECTORY/plots (default: no plots).")
+                        help="Enable selected plots, or all; save in OUTPUT_DIR/plots (default: no plots).")
     episode_selection = parser.add_mutually_exclusive_group()
     episode_selection.add_argument("--plot-episodes", type=int,
                                    help="First N episodes per policy for episode plots (default: 3).")

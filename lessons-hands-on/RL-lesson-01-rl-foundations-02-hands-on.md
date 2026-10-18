@@ -41,7 +41,7 @@ All options are optional. An option that takes a value requires that value when 
 | `--plot-episodes` | optional | Placeholder: `PLOT_EPISODES`; integer ≥ 1. Default: `3`. | Plot the first N available episodes per policy for trajectory, reward and discount figures. Requires `--plot-types`; mutually exclusive with `--plot-episode-ids`. |
 | `--plot-episode-ids` | optional | One or more integers from 1 through `EPISODES`. | Plot specific episode numbers per policy for trajectory, reward and discount figures. Requires `--plot-types`; mutually exclusive with `--plot-episodes`. Does not filter batch summaries. |
 | `--verbose` | optional | No value; flag. Default: disabled. | Also display output and summary tables in the terminal. |
-| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `~/learning-rl-output/lesson01/TIMESTAMP/`. | Save `summary.csv`, `run.log` and requested figures in `plots/`, creating directories if needed. Reusing a directory overwrites matching files and retains other files. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIR`; relative or absolute directory path. Default: `~/learning-rl-output/lesson01/TIMESTAMP/`. | Save `summary.csv`, `run.log` and requested figures in `plots/`, creating directories if needed. Reusing a directory overwrites matching files and retains other files. |
 
 ### Registered policy values
 

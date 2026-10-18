@@ -197,7 +197,7 @@ It has no average over the first action because that action is already fixed. Ev
 
 If $x$ could lead back to $s$, their values would depend on each other. Bellman equations then form a set of simultaneous consistency equations. Solving them or repeatedly updating estimates is how we obtain the values; they are not additional rewards handed to the agent.
 
-## 6. Theory exercise --- Solve values by hand
+## 6. Theory exercise — Solve values by hand
 
 Consider the deterministic MDP:
 
@@ -411,7 +411,7 @@ The maximum norm $\|\cdot\|_\infty$ means the largest absolute entry. A residual
 
 ------------------------------------------------------------------------
 
-## 10. Theory exercise --- $V$ versus $Q$
+## 10. Theory exercise — $V$ versus $Q$
 
 Suppose a state has two available actions:
 
@@ -465,11 +465,11 @@ This distinction prepares us for **policy improvement**.
 
 ------------------------------------------------------------------------
 
-## 11. Challenge --- Improve the policy
+## 11. Challenge — Improve the policy
 
 Return to the five-state LineWorld.
 
-You now have estimated $Q(s,a)$ values---or can reason about them.
+You now have estimated $Q(s,a)$ values — or can reason about them.
 
 Construct a new policy:
 
@@ -487,7 +487,7 @@ This question leads directly toward bandits, exploration strategies, Monte Carlo
 
 ------------------------------------------------------------------------
 
-## Progressive theoretical exercises — Values and Bellman equations
+## 12. Progressive theoretical exercises — Values and Bellman equations
 
 Work through these exercises **in order**, after reading the lesson. The earlier in-text exercises are warm-ups; this sequence gradually removes the scaffolding. No programming is needed. Write your reasoning as well as your final answer. Allow an additional 60–90 minutes, or split the sequence across study sessions. The final two exercises are stretch challenges: use their hints when needed. Try each question before reading its solution.
 
@@ -670,7 +670,7 @@ Rearrangement gives $e\leq b/(1-\gamma)$. The bounds are $0.04$ at $\gamma=0.5$ 
 
 
 
-## 12. Key ideas
+## 13. Key ideas
 
 The state-value function is
 
@@ -720,7 +720,7 @@ That idea appears throughout reinforcement learning.
 
 ------------------------------------------------------------------------
 
-## 13. Mastery checkpoint
+## 14. Mastery checkpoint
 
 Before moving on, you should be able to answer:
 

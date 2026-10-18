@@ -28,7 +28,7 @@ All options are optional. An option that takes a value requires that value when 
 | `--theta` | optional | Placeholder: `THETA`; real number > 0. Default: `1e-10`. | Stop policy evaluation or value iteration when the largest value change in a sweep is below this tolerance. |
 | `--max-iterations` | optional | Placeholder: `MAX_ITERATIONS`; integer ≥ 1. Default: `100000`. | Limit policy improvement rounds, sweeps per policy evaluation, and value iteration sweeps; report failure if convergence is not reached. |
 | `--verbose` | optional | No value; flag. Default: disabled. | Also display output and summary tables in the terminal. |
-| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson04/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIR`; relative or absolute directory path. Default: `output/lesson04/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
 
 ### Registered algorithm values
 
@@ -153,7 +153,7 @@ Include the commands used and the requested output tables with each answer.
 4. **Tolerance:** compare `--theta 0.01`, `0.000001` and `0.0000000001` with `--algorithm both --size 8 --gamma 0.99`. Provide sweeps, rounds, residuals and state-zero values. Calculate each residual-based value-error bound $b/(1-\gamma)$; explain why a looser tolerance need not change the final output in this deterministic route.
 5. **Immediate rewards and ties:** run `--algorithm both --gamma 0` and `--gamma 0.9`. Provide the state/action tables and identify where the selected actions differ. Explain why the zero-discount optimum can choose left away from the goal.
 
-### Additional challenge - Evaluate a longer route
+### Additional challenge — Evaluate a longer route
 
 Use the supplied CLI with `--size 20 --algorithm both` at discounts `0.5` and `0.99`. Provide both state-zero values, action tables and residuals. Verify state-zero values using the distance formula, and explain how the discount changes the value of a delayed goal reward. Does a negative state-zero value imply that moving left is better?
 
@@ -220,7 +220,7 @@ RL lesson04 --algorithm both --gamma 0.9
 
 At zero discount both algorithms report `[-1, -1, -1, 10, 0]`, with left at states zero through two and right at state three. Away from the goal, both actions have immediate reward `-1`; the stable tie rule chooses left. At discount `0.9`, both report `[4.58, 6.2, 8, 10, 0]` with right at every nonterminal state. Zero discount ignores all delayed rewards, so an optimal policy for that objective need not reach the goal.
 
-### Solution - Evaluate a longer route
+### Solution — Evaluate a longer route
 
 ```bash
 RL lesson04 --size 20 --algorithm both --gamma 0.5
