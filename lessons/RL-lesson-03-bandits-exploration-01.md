@@ -238,7 +238,7 @@ The gaps are $1,0,0.8,0$, so cumulative pseudo-regret is $1.8$. No sampled rewar
 
 
 
-## Progressive theoretical exercises — Bandits
+## 7. Progressive theoretical exercises — Bandits
 
 Work through these exercises **in order**, after reading the lesson. The earlier in-text exercises are warm-ups; this sequence gradually removes the scaffolding. No programming is needed. Write your reasoning as well as your final answer. Allow an additional 60–90 minutes, or split the sequence across study sessions. The final two exercises are stretch challenges: use their hints when needed. Try each question before reading its solution.
 
@@ -431,11 +431,11 @@ Choosing A first reveals nothing about B. On the final pull, A's mean $0.6$ exce
 
 
 
-## 9. Common mistakes
+## 8. Common mistakes
 
 Using total pulls in every arm's denominator produces incorrect estimates. Deterministically choosing the first tied arm introduces arbitrary preference. Evaluating only one seed can confuse luck with a reliable strategy. Using true means to choose actions gives the agent information it should not have. Treating $\epsilon=0.1$ as “choose a non-greedy arm 10% of the time” implements a different probability rule.
 
-## 10. Mastery checkpoint
+## 9. Mastery checkpoint
 
 Explain without notes:
 

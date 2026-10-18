@@ -32,7 +32,7 @@ All options are optional. An option that takes a value requires that value when 
 | `--max-iterations` | optional | Placeholder: `MAX_ITERATIONS`; integer ≥ 1. Default: `100000`. | Maximum DP evaluation sweeps before reporting failure to converge. |
 | `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Seed for reproducible MC sampling. |
 | `--verbose` | optional | No value; flag. Default: disabled. | Also display output and summary tables in the terminal. |
-| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson02/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIR`; relative or absolute directory path. Default: `output/lesson02/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
 
 ### Registered method values
 
@@ -53,7 +53,7 @@ the outputs discussed below, or use `--verbose` to inspect them on screen.
 Each run gets a new directory. Use `--output-dir` to choose a directory; reusing it
 overwrites its CSV and log. See [output conventions](../docs/command-outputs.md).
 
-## 1. Practical lab --- Estimate values from experience
+## 1. Practical lab — Estimate values from experience
 
 We can calculate values from a known model, or estimate them by observing what happens. Think of estimating the value of a delivery strategy using either a complete route-and-traffic model or a log of completed trips.
 
@@ -151,7 +151,7 @@ $$
 
 The maximum norm $\|\cdot\|_\infty$ means the largest absolute entry. A residual $0.01$ gives an error bound $0.1$ at $\gamma=0.9$, but $1$ at $\gamma=0.99$. These are worst-case bounds, not exact errors. The stretch exercises derive them.
 
-## Exercises - Run, report and interpret
+## 3. Practical exercises — Run, report and interpret
 
 Include your commands and the requested output rows with every answer.
 

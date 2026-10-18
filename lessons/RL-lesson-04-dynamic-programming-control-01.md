@@ -294,7 +294,7 @@ $$
 
 A small residual supports accuracy of the values; it is not, by itself, a claim of exact floating-point equality. For example, $b=10^{-6}$ and $\gamma=0.99$ give a maximum value-error bound of $10^{-4}$. This bound concerns values, not an exact guarantee that every selected action matches a particular optimal policy when actions nearly tie.
 
-## 9. A control-design challenge
+## 8. A control-design challenge
 
 Design a tiny MDP in which an immediate attractive reward leads to a worse long-term result. Keep at most four states and two actions per nonterminal state.
 
@@ -302,7 +302,7 @@ Specify all transition probabilities, rewards, terminal conditions and discount.
 
 One possible starting point: from a start state, `cash_out` terminates with $+3$ while `continue` earns $-1$ and reaches a state where `finish` terminates with $+10$. At $\gamma=0.9$, continuing returns $-1+0.9(10)=8$, exceeding $3$.
 
-## Progressive theoretical exercises — Dynamic programming control
+## 9. Progressive theoretical exercises — Dynamic programming control
 
 Work through these exercises **in order**, after reading the lesson. The earlier in-text exercises are warm-ups; this sequence gradually removes the scaffolding. No programming is needed. Write your reasoning as well as your final answer. Allow an additional 60–90 minutes, or split the sequence across study sessions. The final two exercises are stretch challenges: use their hints when needed. Try each question before reading its solution.
 

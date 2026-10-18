@@ -51,7 +51,7 @@ Source: [Lesson 1](../lessons/RL-lesson-01-rl-foundations-01.md) and its
 - **Cumulative discounted reward**, $C_n$: Rewards accumulated from the start through $n$ recorded transitions, $\sum_{t=0}^{n-1}\gamma^tR_{t+1}$. An intermediate $C_n$ is not the future return $G_n$.
 - **Reward design:** Choosing the scoring rule the agent will optimize.
 - **Sparse rewards:** Rewards given only at selected events; the lab uses zero for ordinary transitions and one for reaching the goal.
-- **LineWorld:** The shared deterministic environment with a line of numbered states, a reflecting left boundary, and a terminal goal at the right boundary.
+- **LineWorld:** The shared deterministic environment with a line of numbered states, a blocking left boundary (moving left from state 0 stays at 0), and a terminal goal at the right boundary.
 
 ## Values and policy evaluation
 
@@ -131,7 +131,7 @@ Source: [Lesson 4](../lessons/RL-lesson-04-dynamic-programming-control-01.md) an
 - **Optimal policy:** A policy attaining optimal values.
 - **Bellman optimality equation:** A state's optimal value is the maximum, over available actions, of expected reward plus discounted optimal continuation.
 - **Value iteration:** Repeated Bellman optimality backups, followed by extracting a greedy policy.
-- **Bellman operator**, $T^\pi$ or $T_*$: The mapping from a value table to its expectation or optimality backup table.
+- **Bellman operator**, $T_\pi$ or $T_*$: The mapping from a value table to its expectation or optimality backup table.
 - **Maximum norm**, $\|V-W\|_\infty$: Largest absolute difference between corresponding entries of two value tables.
 - **Contraction:** A mapping that shrinks maximum differences by a factor less than one; discounted Bellman operators shrink them by at most $\gamma<1$.
 - **Fixed point:** A table unchanged by the operator; the policy value or optimal value is the corresponding Bellman fixed point.

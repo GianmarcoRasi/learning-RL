@@ -29,7 +29,7 @@ All options are optional. An option that takes a value requires that value when 
 | `--initial` | optional | Placeholder: `INITIAL`; finite real number. Default: `0.0`. | Initial estimated value of every arm. |
 | `--seed` | optional | Placeholder: `SEED`; any integer. Default: `7`. | Base seed for the action and reward random stream schedule. |
 | `--verbose` | optional | No value; flag. Default: disabled. | Also display output and summary tables in the terminal. |
-| `--output-dir` | optional | Placeholder: `OUTPUT_DIRECTORY`; relative or absolute directory path. Default: `output/lesson03/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
+| `--output-dir` | optional | Placeholder: `OUTPUT_DIR`; relative or absolute directory path. Default: `output/lesson03/TIMESTAMP/`. | Save `summary.csv` and `run.log`, creating the directory if needed. Reusing a directory overwrites these files. |
 
 ### Lesson output
 

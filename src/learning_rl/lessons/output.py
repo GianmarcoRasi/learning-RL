@@ -32,7 +32,7 @@ def add_output_argument(parser, *, help_text=None):
     )
     parser.add_argument(
         "--output-dir", type=Path,
-        help=help_text or ("Save summary.csv and run.log here (default: output/lessonNN/TIMESTAMP/). "
+        help=help_text or (f"Save summary.csv and run.log here (default: output/{parser.prog.split()[-1]}/TIMESTAMP/). "
                           "Reusing a directory overwrites these files."),
     )
 

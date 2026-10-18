@@ -37,7 +37,7 @@ This is **sequential decision making**: one decision changes the situation in wh
 
 ### How is this different from supervised learning?
 
-In supervised learning, a training example usually includes a target answer, such as “this picture shows a cat.” In RL, feedback usually says how an outcome scored, without giving the best action as a label. For **example**, A failed cleaning run does not directly tell the robot when it should have charged.
+In supervised learning, a training example usually includes a target answer, such as “this picture shows a cat.” In RL, feedback usually says how an outcome scored, without giving the best action as a label. For **example**, a failed cleaning run does not directly tell the robot when it should have charged.
 
 An RL agent also affects what it gets to observe, for **example**, visiting the charger teaches it different things from cleaning another room. In the companion hands-on lab, we only simulate this interaction. Learning a policy comes later.
 
@@ -88,7 +88,7 @@ $$
 
 Read the vertical bar as “given.” The formula says: **the chance of selecting action $a$, given state $s$**.
 
-For **example**, If $\pi(\text{charge}\mid\text{low})=0.8$ and $\pi(\text{clean}\mid\text{low})=0.2$, the robot charges in about 80 out of 100 such decisions, over many repetitions. Those counts are averages, not a guarantee for a particular group of 100. The available action probabilities must add to one.
+For **example**, if $\pi(\text{charge}\mid\text{low})=0.8$ and $\pi(\text{clean}\mid\text{low})=0.2$, the robot charges in about 80 out of 100 such decisions, over many repetitions. Those counts are averages, not a guarantee for a particular group of 100. The available action probabilities must add to one.
 
 The policy supplies the action choices along a trajectory. The same policy can produce different trajectories when its choices or the environment’s outcomes are random.
 
@@ -265,7 +265,7 @@ Implement this environment and compare fixed and random policies in the [hands-o
 
 ------------------------------------------------------------------------
 
-## 6. Theory exercise --- Compute returns
+## 6. Theory exercise — Compute returns
 
 Suppose the future rewards are
 
@@ -312,7 +312,7 @@ G_0=2-1+5=6.
 $$
 
 
-### Exercise 1B --- Reasoning
+### Exercise 1B — Reasoning
 
 Two actions are available:
 
@@ -353,7 +353,7 @@ At $\gamma=0.4$, the two actions have equal return.
 
 ------------------------------------------------------------------------
 
-## 7. Theory exercise --- Model an RL problem
+## 7. Theory exercise — Model an RL problem
 
 Choose one problem:
 
