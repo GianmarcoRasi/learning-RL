@@ -8,7 +8,7 @@ mkdir -p site/_src
 cp README.md site/_src/index.md
 cp -r lessons lessons-hands-on docs flashcards site/_src/
 cp site/support.md site/_src/support.md
-cp -r site/javascripts site/_src/
+cp -r site/javascripts site/stylesheets site/_src/
 if [ "${1:-}" = "serve" ]; then
   mkdocs serve -f site/mkdocs.yml
 else
