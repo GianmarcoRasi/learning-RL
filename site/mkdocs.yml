@@ -1,0 +1,76 @@
+site_name: Learning Reinforcement Learning
+site_description: Lessons and hands-on Python exercises for reinforcement learning foundations.
+site_url: https://gianmarcorasi.github.io/learning-RL/
+repo_url: https://github.com/GianmarcoRasi/learning-RL
+repo_name: GianmarcoRasi/learning-RL
+edit_uri: ""
+
+# build.sh stages the course Markdown here before building
+docs_dir: _src
+site_dir: _build
+
+hooks:
+  - hooks.py
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js
+
+extra:
+  social:
+    - icon: fontawesome/solid/mug-hot
+      link: https://ko-fi.com/qwark992
+      name: Support this course on Ko-fi
+    - icon: fontawesome/brands/github
+      link: https://github.com/GianmarcoRasi/learning-RL
+
+nav:
+  - Home: index.md
+  - Lesson 1 – RL foundations:
+      - Theory: lessons/RL-lesson-01-rl-foundations-01.md
+      - Hands-on: lessons-hands-on/RL-lesson-01-rl-foundations-02-hands-on.md
+  - Lesson 2 – Value functions and Bellman:
+      - Theory: lessons/RL-lesson-02-value-functions-bellman-01.md
+      - Hands-on: lessons-hands-on/RL-lesson-02-value-functions-bellman-02-hands-on.md
+  - Lesson 3 – Bandits and exploration:
+      - Theory: lessons/RL-lesson-03-bandits-exploration-01.md
+      - Hands-on: lessons-hands-on/RL-lesson-03-bandits-exploration-02-hands-on.md
+  - Lesson 4 – Dynamic programming:
+      - Theory: lessons/RL-lesson-04-dynamic-programming-control-01.md
+      - Hands-on: lessons-hands-on/RL-lesson-04-dynamic-programming-control-02-hands-on.md
+  - Reference:
+      - Glossary: docs/glossary.md
+      - Command outputs: docs/command-outputs.md
+  - Support ☕: support.md

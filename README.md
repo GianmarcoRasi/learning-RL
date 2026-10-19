@@ -3,6 +3,8 @@
 Lessons and hands-on Python exercises covering reinforcement learning foundations,
 value functions and the Bellman equation, multi-armed bandits, and dynamic programming.
 
+Read the lessons online at <https://gianmarcorasi.github.io/learning-RL/>.
+
 ## Requirements
 
 - Python 3.10 or newer, with `venv` and `pip` available.
@@ -125,6 +127,7 @@ When a lesson introduces a term, add its definition and lesson reference to the 
 - `docs/`: command-output documentation and the project glossary.
 - `flashcards/`: Anki flashcard imports (currently Lesson 1).
 - `tests/`: numeric, CLI, and plotting checks.
+- `site/`: configuration and build script for the GitHub Pages lesson website.
 - `output/`: default command logs for lessons 02–04, grouped by lesson and run. Lesson 01 saves its CSV, log and optional figures under `~/learning-rl-output/lesson01/TIMESTAMP/` by default; `--output-dir` overrides the run directory. See [output conventions](docs/command-outputs.md). Generated results are local and ignored by Git.
 
 Start with the [Lesson 1 theory](lessons/RL-lesson-01-rl-foundations-01.md)
@@ -141,6 +144,18 @@ python -m unittest discover -s tests -v
 
 Plotting checks run with Matplotlib, included in the standard installation.
 
+## Build the lesson website
+
+The lessons are published with GitHub Pages by `.github/workflows/pages.yml` on every
+push to `main`. To preview the site locally, with the virtual environment activated:
+
+```bash
+pip install -r site/requirements.txt
+bash site/build.sh serve
+```
+
+Then open <http://127.0.0.1:8000>. `bash site/build.sh` alone builds into `site/_build/`.
+
 ## Finish or resume a session
 
 Leave the activated environment with:
@@ -153,3 +168,10 @@ In a new terminal, return to the project root and run the activation command for
 your operating system again. You only need to create `.venv` and install its
 packages once, unless you recreate the environment. Keep `.venv/`, `__pycache__/`,
 and generated plots out of version control.
+
+## Support this course
+
+These lessons are free. If they help you, you can support them on
+[Ko-fi](https://ko-fi.com/qwark992).
+
+<a href="https://ko-fi.com/qwark992" target="_blank" rel="noopener"><img height="36" style="border:0;height:36px;" src="https://storage.ko-fi.com/cdn/kofi2.png?v=3" alt="Buy Me a Coffee at ko-fi.com"></a>
