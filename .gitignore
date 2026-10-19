@@ -9,3 +9,5 @@ outputs/
 plots/
 lesson01/plots/
 scratch/
+site/_src/
+site/_build/
