@@ -1,0 +1,8 @@
+/* Dark panel behind Mermaid diagrams, which are drawn with the dark theme */
+.rl-mermaid {
+  background: #1e2129;
+  border-radius: 0.2rem;
+  padding: 1rem;
+  overflow-x: auto;
+  text-align: center;
+}
