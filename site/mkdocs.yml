@@ -73,4 +73,5 @@ nav:
   - Reference:
       - Glossary: docs/glossary.md
       - Command outputs: docs/command-outputs.md
+      - Flashcards with Anki: docs/flashcards-anki.md
   - Support ☕: support.md
